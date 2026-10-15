@@ -28,17 +28,20 @@
 
   .tabs {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     margin-bottom: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
   }
   .tab {
-    flex: 1;
-    padding: 10px;
+    padding: 8px 10px;
     text-align: center;
     background: #333;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .tab.active { background: #66ccff; color: black; font-weight: bold; }
 
@@ -48,6 +51,19 @@
     border-radius: 8px;
     margin-bottom: 8px;
   }
+  .card.gold {
+    background: linear-gradient(135deg, #4a3a00, #6a5500);
+    border: 2px solid gold;
+  }
+  .card.red {
+    background: linear-gradient(135deg, #4a0000, #6a0000);
+    border: 2px solid #ff6666;
+  }
+  .card.green {
+    background: linear-gradient(135deg, #003a00, #006a00);
+    border: 2px solid #66ff66;
+  }
+
   .card-row {
     display: flex;
     justify-content: space-between;
@@ -72,7 +88,9 @@
   .btn:disabled { background: #555; color: #888; cursor: not-allowed; }
   .btn.green { background: #66ff66; }
   .btn.red { background: #ff6666; }
+  .btn.gold { background: gold; }
   .btn.small { padding: 6px 10px; font-size: 11px; }
+  .btn.full { width: 100%; padding: 10px; font-size: 13px; margin-top: 6px; }
 
   .toast {
     position: fixed;
@@ -139,22 +157,61 @@
     height: 100%;
     transition: width 0.5s;
   }
-  .lot-timer {
-    font-size: 11px;
-    color: #ffaa00;
-    margin-top: 4px;
-  }
-  .lot-hint {
-    font-size: 10px;
-    color: #888;
-    margin-top: 4px;
+  .lot-timer { font-size: 11px; color: #ffaa00; margin-top: 4px; }
+  .lot-hint { font-size: 10px; color: #888; margin-top: 4px; text-align: center; }
+  .lot-chance { font-size: 11px; color: #66ccff; margin-top: 4px; }
+
+  .banner {
+    background: linear-gradient(135deg, #663300, #996600);
+    border: 2px solid gold;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
     text-align: center;
+    font-size: 12px;
+    font-weight: bold;
   }
-  .lot-chance {
-    font-size: 11px;
-    color: #66ccff;
-    margin-top: 4px;
+
+  .ach {
+    background: #333;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+  .ach.done { background: linear-gradient(135deg, #003a00, #006a00); border: 2px solid #66ff66; }
+  .ach-icon { font-size: 24px; }
+  .ach-info { flex: 1; }
+  .ach-name { font-size: 13px; font-weight: bold; margin-bottom: 2px; }
+  .ach-desc { font-size: 11px; color: #aaa; }
+  .ach.done .ach-desc { color: #aaffaa; }
+  .ach-reward { color: gold; font-size: 12px; font-weight: bold; }
+
+  .skin {
+    background: #333;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .skin.active { background: linear-gradient(135deg, #4a3a00, #6a5500); border: 2px solid gold; }
+  .skin-icon { font-size: 24px; }
+  .skin-info { flex: 1; }
+  .skin-name { font-size: 13px; font-weight: bold; }
+
+  .roulette-box {
+    background: #333;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .roulette-icon { font-size: 60px; margin-bottom: 10px; }
+  .roulette-result { font-size: 16px; font-weight: bold; margin: 10px 0; }
 </style>
 </head>
 <body>
@@ -172,6 +229,10 @@
   <div class="tab active" data-tab="market">🛒 Рынок</div>
   <div class="tab" data-tab="inventory">📦 Сумка</div>
   <div class="tab" data-tab="lots">🏷️ Лоты</div>
+  <div class="tab" data-tab="roulette">🎰 Рулетка</div>
+  <div class="tab" data-tab="bank">🏦 Банк</div>
+  <div class="tab" data-tab="ach">🏅 Награды</div>
+  <div class="tab" data-tab="skins">💼 Скины</div>
   <div class="tab" data-tab="leaders">🏆 Топ</div>
 </div>
 
@@ -186,15 +247,61 @@ var energ = 20;
 var maxEnerg = 20;
 var inv = [];
 var loty = [];
+var dolg = 0;
+var skin = '👤';
 var tab = 'market';
 
-var tovari = [
-  { id: 'phone', name: '📱 Старый телефон', cena: 300, lvl: 1, ap: 150 },
-  { id: 'sneak', name: '👟 Кроссовки', cena: 500, lvl: 1, ap: 200 },
-  { id: 'bike', name: '🚲 Велосипед', cena: 1000, lvl: 2, ap: 400 },
-  { id: 'laptop', name: '💻 Ноутбук', cena: 2500, lvl: 3, ap: 900 },
-  { id: 'car', name: '🚗 Машина', cena: 10000, lvl: 5, ap: 3000 }
+var poslBonus = 0;
+var seriyaDney = 0;
+var poslRul = 0;
+var activeSkin = '👤';
+
+var dostizheniya = [
+  { id: 'first_buy', name: 'Первая покупка', desc: 'Купи первый товар', icon: '🛒', reward: 100, done: false },
+  { id: 'first_sell', name: 'Первая продажа', desc: 'Продай первый товар', icon: '💰', reward: 200, done: false },
+  { id: 'sell_10', name: 'Десять сделок', desc: 'Продай 10 товаров', icon: '📈', reward: 1000, done: false },
+  { id: 'sell_50', name: 'Перекуп-про', desc: 'Продай 50 товаров', icon: '🔥', reward: 5000, done: false },
+  { id: 'lvl_5', name: 'Пятый уровень', desc: 'Достигни 5 уровня', icon: '⭐', reward: 2000, done: false },
+  { id: 'lvl_10', name: 'Десятый уровень', desc: 'Достигни 10 уровня', icon: '🌟', reward: 10000, done: false },
+  { id: 'money_10k', name: 'Первые 10000', desc: 'Заработай 10000₽', icon: '💵', reward: 3000, done: false },
+  { id: 'money_100k', name: 'Сто тысяч', desc: 'Заработай 100000₽', icon: '🏆', reward: 20000, done: false },
+  { id: 'crash_test', name: 'Краденое', desc: 'Купи краденый товар', icon: '🕵️', reward: 500, done: false },
+  { id: 'roulette_win', name: 'Джекпот', desc: 'Выиграй в рулетке 10000₽', icon: '🎰', reward: 5000, done: false }
 ];
+
+var skiny = [
+  { id: '👤', name: 'Обычный', price: 0 },
+  { id: '💼', name: 'Бизнесмен', price: 1000 },
+  { id: '🕶️', name: 'Крутой', price: 3000 },
+  { id: '🎩', name: 'Магнат', price: 10000 },
+  { id: '👑', name: 'Король рынка', price: 50000 },
+  { id: '🤴', name: 'Император', price: 200000 }
+];
+
+var kupilVsego = 0;
+var prodalVsego = 0;
+var krashennoeKupil = false;
+var jackpotVyl = false;
+
+var tovari = [
+  { id: 'phone', name: '📱 Старый телефон', cena: 300, lvl: 1, ap: 150, category: 'tech' },
+  { id: 'sneak', name: '👟 Кроссовки', cena: 500, lvl: 1, ap: 200, category: 'clothes' },
+  { id: 'bike', name: '🚲 Велосипед', cena: 1000, lvl: 2, ap: 400, category: 'tech' },
+  { id: 'laptop', name: '💻 Ноутбук', cena: 2500, lvl: 3, ap: 900, category: 'tech' },
+  { id: 'guitar', name: '🎸 Гитара', cena: 4000, lvl: 4, ap: 1200, category: 'music' },
+  { id: 'car', name: '🚗 Машина', cena: 10000, lvl: 5, ap: 3000, category: 'auto' }
+];
+
+var tovariKrashennoe = [
+  { id: 'k_phone', name: '📱 Телефон (левый)', cena: 150, ap: 100 },
+  { id: 'k_watch', name: '⌚ Часы (левый)', cena: 300, ap: 200 },
+  { id: 'k_laptop', name: '💻 Ноут (левый)', cena: 800, ap: 500 }
+];
+
+var gotovHotLot = null;
+var vremyaHotLota = 0;
+var akciyaCateg = null;
+var vremyaAkcii = 0;
 
 function vkDostupen() {
   return typeof vkBridge !== 'undefined' && vkBridge && typeof vkBridge.send === 'function';
@@ -203,15 +310,8 @@ function vkDostupen() {
 if (vkDostupen()) {
   vkBridge.send('VKWebAppInit').catch(function() {});
   vkBridge.send('VKWebAppGetUserInfo')
-    .then(function(u) {
-      user = u;
-      otpravScore();
-      render();
-    })
-    .catch(function() {
-      user = { id: 0, first_name: 'Гость', last_name: '' };
-      render();
-    });
+    .then(function(u) { user = u; otpravScore(); render(); })
+    .catch(function() { user = { id: 0, first_name: 'Гость', last_name: '' }; render(); });
 } else {
   user = { id: 0, first_name: 'Гость', last_name: '' };
 }
@@ -222,18 +322,19 @@ function toast(msg, tip) {
   t.className = 'toast show';
   if (tip == 'ok') t.style.background = '#2a5';
   else if (tip == 'err') t.style.background = '#a33';
+  else if (tip == 'gold') t.style.background = '#a80';
   else t.style.background = '#444';
-  setTimeout(function() { t.className = 'toast'; }, 1800);
+  setTimeout(function() { t.className = 'toast'; }, 2000);
 }
 
 function sohranit() {
   localStorage.setItem('perekup', JSON.stringify({
-    dengi: dengi,
-    lvl: lvl,
-    energ: energ,
-    maxEnerg: maxEnerg,
-    inv: inv,
-    loty: loty
+    dengi: dengi, lvl: lvl, energ: energ, maxEnerg: maxEnerg,
+    inv: inv, loty: loty, dolg: dolg,
+    poslBonus: poslBonus, seriyaDney: seriyaDney, poslRul: poslRul,
+    activeSkin: activeSkin, dostizheniya: dostizheniya,
+    kupilVsego: kupilVsego, prodalVsego: prodalVsego,
+    krashennoeKupil: krashennoeKupil, jackpotVyl: jackpotVyl
   }));
   otpravScore();
 }
@@ -249,6 +350,24 @@ function zagruzit() {
       if (d.maxEnerg) maxEnerg = d.maxEnerg;
       if (d.inv) inv = d.inv;
       if (d.loty) loty = d.loty;
+      if (d.dolg) dolg = d.dolg;
+      if (d.poslBonus) poslBonus = d.poslBonus;
+      if (d.seriyaDney) seriyaDney = d.seriyaDney;
+      if (d.poslRul) poslRul = d.poslRul;
+      if (d.activeSkin) activeSkin = d.activeSkin;
+      if (d.dostizheniya) {
+        for (var i = 0; i < d.dostizheniya.length; i++) {
+          for (var j = 0; j < dostizheniya.length; j++) {
+            if (dostizheniya[j].id == d.dostizheniya[i].id) {
+              dostizheniya[j].done = d.dostizheniya[i].done;
+            }
+          }
+        }
+      }
+      if (d.kupilVsego) kupilVsego = d.kupilVsego;
+      if (d.prodalVsego) prodalVsego = d.prodalVsego;
+      if (d.krashennoeKupil) krashennoeKupil = d.krashennoeKupil;
+      if (d.jackpotVyl) jackpotVyl = d.jackpotVyl;
     } catch(e) {}
   }
 }
@@ -258,12 +377,13 @@ function randomCena(baza) {
   return Math.floor(baza * x);
 }
 
-function minCenaTovara(item) {
-  return Math.floor(item.cena * 0.7);
-}
+function minCenaTovara(item) { return Math.floor(item.cena * 0.7); }
+function maxCenaTovara(item) { return Math.floor(item.cena * 2.5); }
 
-function maxCenaTovara(item) {
-  return Math.floor(item.cena * 2.5);
+function naytiTovar(itemId) {
+  for (var i = 0; i < tovari.length; i++) if (tovari[i].id == itemId) return tovari[i];
+  for (var k = 0; k < tovariKrashennoe.length; k++) if (tovariKrashennoe[k].id == itemId) return tovariKrashennoe[k];
+  return null;
 }
 
 function rasschitatShansICena(l, item) {
@@ -279,17 +399,40 @@ function rasschitatShansICena(l, item) {
 
   l.shansProdagy = Math.round(shans);
   l.vremyaOzhidaniya = Math.round(vremya * 1000);
-  l.vremyaStart = l.vremyaStart || l.vremya;
+  l.vremyaStart = l.vremyaStart || Date.now();
   l.vremya = l.vremyaStart + l.vremyaOzhidaniya;
 }
 
-function kupit(itemId) {
-  var item = null;
-  for (var i = 0; i < tovari.length; i++) {
-    if (tovari[i].id == itemId) item = tovari[i];
+function proveritDostizheniya() {
+  for (var i = 0; i < dostizheniya.length; i++) {
+    var d = dostizheniya[i];
+    if (d.done) continue;
+    var vypolnil = false;
+    if (d.id == 'first_buy' && kupilVsego >= 1) vypolnil = true;
+    if (d.id == 'first_sell' && prodalVsego >= 1) vypolnil = true;
+    if (d.id == 'sell_10' && prodalVsego >= 10) vypolnil = true;
+    if (d.id == 'sell_50' && prodalVsego >= 50) vypolnil = true;
+    if (d.id == 'lvl_5' && lvl >= 5) vypolnil = true;
+    if (d.id == 'lvl_10' && lvl >= 10) vypolnil = true;
+    if (d.id == 'money_10k' && dengi >= 10000) vypolnil = true;
+    if (d.id == 'money_100k' && dengi >= 100000) vypolnil = true;
+    if (d.id == 'crash_test' && krashennoeKupil) vypolnil = true;
+    if (d.id == 'roulette_win' && jackpotVyl) vypolnil = true;
+
+    if (vypolnil) {
+      d.done = true;
+      dengi += d.reward;
+      setTimeout(function(name, r) {
+        return function() { toast('🏅 ' + name + ' +' + r + '₽', 'gold'); };
+      }(d.name, d.reward), 500);
+    }
   }
+}
+
+function kupit(itemId) {
+  var item = naytiTovar(itemId);
   if (!item) return;
-  if (item.lvl > lvl) { toast('🔒 Нужен уровень ' + item.lvl, 'err'); return; }
+  if (item.lvl && item.lvl > lvl) { toast('🔒 Нужен уровень ' + item.lvl, 'err'); return; }
   var cena = randomCena(item.cena);
   if (dengi < cena) { toast('💸 Мало денег', 'err'); return; }
   if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
@@ -302,21 +445,75 @@ function kupit(itemId) {
     kupCena: cena,
     ap: 0
   });
+  kupilVsego++;
+  proveritDostizheniya();
   toast('✅ Куплено за ' + cena + '₽', 'ok');
+  sohranit();
+  render();
+}
+
+function kupitKrashennoe(itemId) {
+  var item = naytiTovar(itemId);
+  if (!item) return;
+  var cena = randomCena(item.cena);
+  if (dengi < cena) { toast('💸 Мало денег', 'err'); return; }
+  if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
+
+  if (Math.random() < 0.25) {
+    var shtraf = Math.floor(cena * 2);
+    dengi = dengi - shtraf;
+    if (dengi < 0) dengi = 0;
+    energ = energ - 1;
+    toast('🚔 Полиция! Штраф ' + shtraf + '₽', 'err');
+    sohranit();
+    render();
+    return;
+  }
+
+  dengi = dengi - cena;
+  energ = energ - 1;
+  inv.push({
+    uid: Date.now() + Math.random(),
+    itemId: item.id,
+    kupCena: cena,
+    ap: 0,
+    krashennoe: true
+  });
+  kupilVsego++;
+  krashennoeKupil = true;
+  proveritDostizheniya();
+  toast('🕵️ Куплено краденое за ' + cena + '₽', 'ok');
+  sohranit();
+  render();
+}
+
+function kupitHotLot() {
+  if (!gotovHotLot) return;
+  if (dengi < gotovHotLot.cena) { toast('💸 Мало денег', 'err'); return; }
+  if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
+
+  dengi = dengi - gotovHotLot.cena;
+  energ = energ - 1;
+  inv.push({
+    uid: Date.now() + Math.random(),
+    itemId: gotovHotLot.item.id,
+    kupCena: gotovHotLot.cena,
+    ap: 0,
+    hot: true
+  });
+  kupilVsego++;
+  proveritDostizheniya();
+  toast('🔥 Горячий лот куплен за ' + gotovHotLot.cena + '₽!', 'gold');
+  gotovHotLot = null;
   sohranit();
   render();
 }
 
 function apnut(uid) {
   var moy = null;
-  for (var i = 0; i < inv.length; i++) {
-    if (inv[i].uid == uid) moy = inv[i];
-  }
+  for (var i = 0; i < inv.length; i++) if (inv[i].uid == uid) moy = inv[i];
   if (!moy) return;
-  var item = null;
-  for (var j = 0; j < tovari.length; j++) {
-    if (tovari[j].id == moy.itemId) item = tovari[j];
-  }
+  var item = naytiTovar(moy.itemId);
   var stoimost = Math.floor(item.ap * (1 + moy.ap * 0.5));
   if (dengi < stoimost) { toast('💸 Мало денег', 'err'); return; }
   if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
@@ -331,65 +528,55 @@ function apnut(uid) {
 
 function vystavitLot(uid) {
   var idx = -1;
-  for (var i = 0; i < inv.length; i++) {
-    if (inv[i].uid == uid) idx = i;
-  }
+  for (var i = 0; i < inv.length; i++) if (inv[i].uid == uid) idx = i;
   if (idx == -1) return;
   var moy = inv[idx];
-
-  var item = null;
-  for (var j = 0; j < tovari.length; j++) {
-    if (tovari[j].id == moy.itemId) item = tovari[j];
-  }
-
+  var item = naytiTovar(moy.itemId);
   var minC = minCenaTovara(item);
   var maxC = maxCenaTovara(item);
 
   var vvod = prompt(
     '💰 Выставь свою цену\n\n' +
     'Можно от ' + minC + ' до ' + maxC + '₽\n\n' +
-    '💡 Дешёвая цена — продастся быстро\n' +
-    '💡 Дорогая цена — долго ждать',
+    '💡 Дешёвая цена — быстрая продажа\n' +
+    '💡 Дорогая — долго ждать',
     minC
   );
 
   if (vvod === null) return;
   var moyaCena = parseInt(vvod);
-
   if (isNaN(moyaCena)) { toast('❌ Введи число!', 'err'); return; }
-  if (moyaCena < minC) { toast('📉 Слишком дёшево! Мин: ' + minC + '₽', 'err'); return; }
-  if (moyaCena > maxC) { toast('📈 Слишком дорого! Макс: ' + maxC + '₽', 'err'); return; }
+  if (moyaCena < minC) { toast('📉 Слишком дёшево! Мин: ' + minC, 'err'); return; }
+  if (moyaCena > maxC) { toast('📈 Слишком дорого! Макс: ' + maxC, 'err'); return; }
 
   inv.splice(idx, 1);
-
   var lot = {
     uid: Date.now() + Math.random(),
     itemId: moy.itemId,
     kupCena: moy.kupCena,
     ap: moy.ap,
     moyaCena: moyaCena,
-    vremyaStart: Date.now()
+    vremyaStart: Date.now(),
+    krashennoe: moy.krashennoe
   };
   rasschitatShansICena(lot, item);
-
   loty.push(lot);
-  toast('🏷️ Лот выставлен за ' + moyaCena + '₽', 'ok');
+  toast('🏷️ Лот за ' + moyaCena + '₽', 'ok');
   sohranit();
   render();
 }
 
 function zabratLot(uid) {
   var idx = -1;
-  for (var i = 0; i < loty.length; i++) {
-    if (loty[i].uid == uid) idx = i;
-  }
+  for (var i = 0; i < loty.length; i++) if (loty[i].uid == uid) idx = i;
   if (idx == -1) return;
   var l = loty[idx];
   inv.push({
     uid: Date.now() + Math.random(),
     itemId: l.itemId,
     kupCena: l.kupCena,
-    ap: l.ap
+    ap: l.ap,
+    krashennoe: l.krashennoe
   });
   loty.splice(idx, 1);
   toast('↩️ Лот снят', 'ok');
@@ -399,34 +586,42 @@ function zabratLot(uid) {
 
 function prodatLot(uid) {
   var idx = -1;
-  for (var i = 0; i < loty.length; i++) {
-    if (loty[i].uid == uid) idx = i;
-  }
+  for (var i = 0; i < loty.length; i++) if (loty[i].uid == uid) idx = i;
   if (idx == -1) return;
   var l = loty[idx];
-
   if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
+
+  if (l.krashennoe && Math.random() < 0.15) {
+    energ = energ - 1;
+    toast('🚔 Полиция! Товар изъят', 'err');
+    loty.splice(idx, 1);
+    sohranit();
+    render();
+    return;
+  }
 
   var shans = l.shansProdagy || 50;
   var prodano = Math.random() * 100 < shans;
-
   energ = energ - 1;
 
   if (prodano) {
     dengi = dengi + l.moyaCena;
     var prof = l.moyaCena - l.kupCena;
     loty.splice(idx, 1);
+    prodalVsego++;
 
     if (dengi > lvl * 3000) {
       lvl = lvl + 1;
       maxEnerg = maxEnerg + 2;
       energ = maxEnerg;
+      proveritDostizheniya();
       toast('🎉 Уровень ' + lvl + '! +' + prof + '₽', 'ok');
     } else {
+      proveritDostizheniya();
       toast('💰 Продано за ' + l.moyaCena + '₽ (' + (prof >= 0 ? '+' : '') + prof + ')', 'ok');
     }
   } else {
-    toast('😕 Покупатель не нашёлся... шанс был ' + shans + '%', 'err');
+    toast('😕 Покупатель не нашёлся (' + shans + '%)', 'err');
   }
   sohranit();
   render();
@@ -434,19 +629,21 @@ function prodatLot(uid) {
 
 function prodatMgnovenno(uid) {
   var idx = -1;
-  for (var i = 0; i < inv.length; i++) {
-    if (inv[i].uid == uid) idx = i;
-  }
+  for (var i = 0; i < inv.length; i++) if (inv[i].uid == uid) idx = i;
   if (idx == -1) return;
   var moy = inv[idx];
-
   if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
 
-  var item = null;
-  for (var j = 0; j < tovari.length; j++) {
-    if (tovari[j].id == moy.itemId) item = tovari[j];
+  if (moy.krashennoe && Math.random() < 0.2) {
+    energ = energ - 1;
+    inv.splice(idx, 1);
+    toast('🚔 Полиция! Товар изъят', 'err');
+    sohranit();
+    render();
+    return;
   }
 
+  var item = naytiTovar(moy.itemId);
   var bazaProd = moy.kupCena * (1 + moy.ap * 0.4);
   var cenaProd = Math.floor(bazaProd * 0.75);
   var prof = cenaProd - moy.kupCena;
@@ -454,272 +651,70 @@ function prodatMgnovenno(uid) {
   dengi = dengi + cenaProd;
   energ = energ - 1;
   inv.splice(idx, 1);
+  prodalVsego++;
 
   if (dengi > lvl * 3000) {
     lvl = lvl + 1;
     maxEnerg = maxEnerg + 2;
     energ = maxEnerg;
-    toast('🎉 Уровень ' + lvl + '! (срочно)', 'ok');
-  } else {
-    toast('⚡ Срочно: ' + cenaProd + '₽ (' + (prof >= 0 ? '+' : '') + prof + ')', prof >= 0 ? 'ok' : 'err');
   }
+  proveritDostizheniya();
+  toast('⚡ Срочно: ' + cenaProd + '₽ (' + (prof >= 0 ? '+' : '') + prof + ')', prof >= 0 ? 'ok' : 'err');
   sohranit();
   render();
 }
 
-function poluchLeaders() {
-  var s = localStorage.getItem('perekup_leaders');
-  if (s) {
-    try { return JSON.parse(s); } catch(e) { return []; }
+function vzyatBonus() {
+  var now = Date.now();
+  var sutki = 24 * 60 * 60 * 1000;
+  if (now - poslBonus < sutki) {
+    var ostalos = sutki - (now - poslBonus);
+    var chas = Math.ceil(ostalos / (60 * 60 * 1000));
+    toast('⏳ Бонус через ' + chas + ' ч.', 'err');
+    return;
   }
-  return [];
-}
-
-function sohranLeaders(list) {
-  localStorage.setItem('perekup_leaders', JSON.stringify(list));
-}
-
-function otpravScore() {
-  if (!user) return;
-  var moyId = user.id || 0;
-  var imya = (user.first_name || 'Игрок') + ' ' + (user.last_name || '');
-  var list = poluchLeaders();
-  var nashel = false;
-  for (var i = 0; i < list.length; i++) {
-    if (list[i].id == moyId) {
-      list[i].name = imya.trim();
-      list[i].balance = dengi;
-      list[i].level = lvl;
-      nashel = true;
-    }
+  if (now - poslBonus > sutki * 2) {
+    seriyaDney = 0;
   }
-  if (!nashel) {
-    list.push({
-      id: moyId,
-      name: imya.trim(),
-      balance: dengi,
-      level: lvl
-    });
+  seriyaDney++;
+  if (seriyaDney > 7) seriyaDney = 7;
+
+  var summy = [300, 500, 800, 1200, 1800, 2500, 5000];
+  var bonus = summy[seriyaDney - 1];
+  dengi += bonus;
+  poslBonus = now;
+  toast('🎁 День ' + seriyaDney + ': +' + bonus + '₽!', 'gold');
+  sohranit();
+  render();
+}
+
+function krutitRuleku() {
+  var now = Date.now();
+  var sutki = 24 * 60 * 60 * 1000;
+  if (now - poslRul < sutki) {
+    var chas = Math.ceil((sutki - (now - poslRul)) / (60 * 60 * 1000));
+    toast('⏳ Рулетка через ' + chas + ' ч.', 'err');
+    return;
   }
-  sohranLeaders(list);
-  if (vkDostupen() && user.id) {
-    vkBridge.send('VKWebAppStorageSet', {
-      key: 'leader_' + user.id,
-      value: JSON.stringify({ name: imya.trim(), balance: dengi, level: lvl })
-    }).catch(function() {});
-  }
-}
+  if (dengi < 500) { toast('💸 Нужно минимум 500₽', 'err'); return; }
 
-function escapeHtml(s) {
-  s = String(s);
-  s = s.replace(/&/g, '&amp;');
-  s = s.replace(/</g, '&lt;');
-  s = s.replace(/>/g, '&gt;');
-  s = s.replace(/"/g, '&quot;');
-  return s;
-}
+  dengi -= 500;
+  poslRul = now;
 
-function sekDoProdazhi(l) {
-  var proshlo = Date.now() - l.vremyaStart;
-  var ostalos = l.vremyaOzhidaniya - proshlo;
-  if (ostalos < 0) ostalos = 0;
-  return Math.ceil(ostalos / 1000);
-}
+  var prizes = [
+    { v: 0, w: 25, name: '😢 Ничего', ok: false },
+    { v: 200, w: 25, name: '💰 200₽', ok: true },
+    { v: 500, w: 20, name: '💰 500₽', ok: true },
+    { v: 1000, w: 15, name: '💰 1000₽', ok: true },
+    { v: 3000, w: 10, name: '🔥 3000₽', ok: true },
+    { v: 10000, w: 4, name: '💎 ДЖЕКПОТ 10000₽', ok: true },
+    { v: -2000, w: 1, name: '💀 БОМЖ -2000₽', ok: false }
+  ];
 
-function render() {
-  document.getElementById('balance').textContent = dengi + ' ₽';
-  document.getElementById('level').textContent = lvl;
-  document.getElementById('energy').textContent = energ + '/' + maxEnerg;
-
-  var c = document.getElementById('content');
-
-  if (tab == 'market') {
-    var html = '';
-    for (var i = 0; i < tovari.length; i++) {
-      var it = tovari[i];
-      var zakr = it.lvl > lvl;
-      var cena = randomCena(it.cena);
-      var knopka = '';
-      if (zakr || dengi < cena) {
-        knopka = '<button class="btn" disabled>Купить</button>';
-      } else {
-        knopka = '<button class="btn" onclick="kupit(\'' + it.id + '\')">Купить</button>';
-      }
-      html += '<div class="card"><div class="card-row">';
-      html += '<div class="card-info">';
-      html += '<div class="card-name">' + it.name;
-      if (zakr) html += ' 🔒';
-      html += '</div>';
-      html += '<div class="card-meta">Ур. ' + it.lvl + '</div>';
-      html += '</div>';
-      html += '<div class="card-price">~' + cena + ' ₽</div>';
-      html += knopka;
-      html += '</div></div>';
-    }
-    c.innerHTML = html;
-  } else if (tab == 'inventory') {
-    if (inv.length == 0) {
-      c.innerHTML = '<div class="empty">📦 Пусто. Купи что-нибудь!</div>';
-      return;
-    }
-    var h = '';
-    for (var k = 0; k < inv.length; k++) {
-      var m = inv[k];
-      var tovar = null;
-      for (var q = 0; q < tovari.length; q++) {
-        if (tovari[q].id == m.itemId) tovar = tovari[q];
-      }
-      var apCena = Math.floor(tovar.ap * (1 + m.ap * 0.5));
-      var minC = minCenaTovara(tovar);
-      var maxC = maxCenaTovara(tovar);
-
-      h += '<div class="card">';
-      h += '<div class="card-row">';
-      h += '<div class="card-info">';
-      h += '<div class="card-name">' + tovar.name;
-      if (m.ap > 0) h += ' +' + m.ap;
-      h += '</div>';
-      h += '<div class="card-meta">Куплено: ' + m.kupCena + '₽</div>';
-      h += '<div class="card-meta">Диапазон цен: ' + minC + '–' + maxC + '₽</div>';
-      h += '</div>';
-      h += '</div>';
-      h += '<div class="card-row" style="margin-top:8px">';
-      h += '<button class="btn small" onclick="apnut(' + m.uid + ')">🔧 ' + apCena + '₽</button>';
-      h += '<button class="btn small green" onclick="vystavitLot(' + m.uid + ')">🏷️ Выставить</button>';
-      h += '<button class="btn small" onclick="prodatMgnovenno(' + m.uid + ')">⚡ Срочно</button>';
-      h += '</div>';
-      h += '</div>';
-    }
-    c.innerHTML = h;
-  } else if (tab == 'lots') {
-    if (loty.length == 0) {
-      c.innerHTML = '<div class="empty">🏷️ Нет активных лотов<br><br>Выстави товар из сумки</div>';
-      return;
-    }
-    var hl = '';
-    hl += '<div class="lot-hint">💡 Дешевле цена → быстрее продажа и выше шанс. Дорого → долго ждать и риск провала.</div>';
-    for (var w = 0; w < loty.length; w++) {
-      var l = loty[w];
-      var t2 = null;
-      for (var e = 0; e < tovari.length; e++) {
-        if (tovari[e].id == l.itemId) t2 = tovari[e];
-      }
-      var sek = sekDoProdazhi(l);
-      var gotov = sek <= 0;
-      var shans = l.shansProdagy || 50;
-
-      var progress = 0;
-      if (l.vremyaOzhidaniya > 0) {
-        progress = 100 - (sek * 1000 / l.vremyaOzhidaniya) * 100;
-        if (progress < 0) progress = 0;
-        if (progress > 100) progress = 100;
-      }
-
-      hl += '<div class="card">';
-      hl += '<div class="card-row">';
-      hl += '<div class="card-info">';
-      hl += '<div class="card-name">' + t2.name;
-      if (l.ap > 0) hl += ' +' + l.ap;
-      hl += '</div>';
-      hl += '<div class="card-meta">Куплено за ' + l.kupCena + '₽</div>';
-      if (gotov) {
-        hl += '<div class="lot-chance">✅ Готов к продаже · шанс ' + shans + '%</div>';
-      } else {
-        hl += '<div class="lot-timer">⏳ Осталось: ' + sek + ' сек · шанс ' + shans + '%</div>';
-      }
-      hl += '</div>';
-      hl += '<div class="card-price">' + l.moyaCena + ' ₽</div>';
-      hl += '</div>';
-      hl += '<div class="lot-bar"><div class="lot-bar-in" style="width:' + progress + '%"></div></div>';
-      hl += '<div class="card-row" style="margin-top:8px">';
-      if (gotov) {
-        hl += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать (' + shans + '%)</button>';
-      } else {
-        hl += '<button class="btn small" disabled>⏳ Жди ' + sek + ' сек</button>';
-      }
-      hl += '<button class="btn small red" onclick="zabratLot(' + l.uid + ')">↩️ Снять</button>';
-      hl += '</div>';
-      hl += '</div>';
-    }
-    c.innerHTML = hl;
-  } else if (tab == 'leaders') {
-    var list = poluchLeaders();
-    if (list.length == 0) {
-      c.innerHTML = '<div class="empty">🏆 Пока никого нет</div>';
-      return;
-    }
-    list.sort(function(a, b) { return b.balance - a.balance; });
-    var moyId = user ? user.id : 0;
-    var top10 = list.slice(0, 10);
-    var moyIndex = -1;
-    for (var z = 0; z < list.length; z++) {
-      if (list[z].id == moyId) moyIndex = z;
-    }
-    var out = '<div class="lb-refresh">🔄 Топ-10 игроков</div>';
-    for (var v = 0; v < top10.length; v++) {
-      var u = top10[v];
-      var klass = '';
-      var medal = '';
-      if (v == 0) { klass = 'gold'; medal = '🥇'; }
-      else if (v == 1) { klass = 'silver'; medal = '🥈'; }
-      else if (v == 2) { klass = 'bronze'; medal = '🥉'; }
-      else { medal = v + 1; }
-      var etoYa = (u.id == moyId);
-      out += '<div class="lb-row';
-      if (etoYa) out += ' me';
-      out += '">';
-      out += '<div class="lb-rank ' + klass + '">' + medal + '</div>';
-      out += '<div class="lb-info">';
-      out += '<div class="lb-name">' + escapeHtml(u.name);
-      if (etoYa) out += ' (ты)';
-      out += '</div>';
-      out += '<div class="lb-sub">Уровень ' + u.level + '</div>';
-      out += '</div>';
-      out += '<div class="lb-balance">' + u.balance + ' ₽</div>';
-      out += '</div>';
-    }
-    if (moyIndex >= 10) {
-      out += '<div class="lb-refresh" style="margin-top:16px">📍 Твоё место</div>';
-      var ya = list[moyIndex];
-      out += '<div class="lb-row me">';
-      out += '<div class="lb-rank">' + (moyIndex + 1) + '</div>';
-      out += '<div class="lb-info">';
-      out += '<div class="lb-name">' + escapeHtml(ya.name) + ' (ты)</div>';
-      out += '<div class="lb-sub">Уровень ' + ya.level + '</div>';
-      out += '</div>';
-      out += '<div class="lb-balance">' + ya.balance + ' ₽</div>';
-      out += '</div>';
-    }
-    c.innerHTML = out;
-  }
-}
-
-var vseTaby = document.querySelectorAll('.tab');
-for (var i = 0; i < vseTaby.length; i++) {
-  vseTaby[i].onclick = function() {
-    for (var j = 0; j < vseTaby.length; j++) {
-      vseTaby[j].classList.remove('active');
-    }
-    this.classList.add('active');
-    tab = this.getAttribute('data-tab');
-    render();
-  };
-}
-
-zagruzit();
-render();
-
-setInterval(function() {
-  if (energ < maxEnerg) {
-    energ = energ + 1;
-    sohranit();
-    render();
-  }
-}, 60000);
-
-setInterval(function() {
-  if (tab == 'lots' || tab == 'leaders') render();
-}, 1000);
-</script>
-</body>
-</html>
+  var total = 0;
+  for (var i = 0; i < prizes.length; i++) total += prizes[i].w;
+  var rnd = Math.random() * total;
+  var sum = 0;
+  var vyigral = prizes[0];
+  for (var j = 0; j < prizes.length; j++) {
+    sum
