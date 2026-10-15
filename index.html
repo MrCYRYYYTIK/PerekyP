@@ -717,4 +717,470 @@ function krutitRuleku() {
   var sum = 0;
   var vyigral = prizes[0];
   for (var j = 0; j < prizes.length; j++) {
-    sum
+    sum += prizes[j].w;
+    if (rnd <= sum) { vyigral = prizes[j]; break; }
+  }
+
+  dengi += vyigral.v;
+  if (dengi < 0) dengi = 0;
+
+  if (vyigral.v == 10000) {
+    jackpotVyl = true;
+    proveritDostizheniya();
+  }
+
+  if (vyigral.ok) {
+    toast('🎰 ' + vyigral.name, 'gold');
+  } else {
+    toast('🎰 ' + vyigral.name, 'err');
+  }
+  sohranit();
+  render();
+}
+
+function vzyatKredit(summy) {
+  if (dolg > 0) { toast('❌ Уже есть долг', 'err'); return; }
+  if (summy > 5000 + lvl * 2000) { toast('❌ Максимум ' + (5000 + lvl * 2000) + '₽', 'err'); return; }
+  dengi += summy;
+  dolg = Math.floor(summy * 1.3);
+  toast('🏦 Взял ' + summy + '₽. Вернуть: ' + dolg + '₽', 'ok');
+  sohranit();
+  render();
+}
+
+function oplatitDolg() {
+  if (dolg <= 0) return;
+  if (dengi < dolg) { toast('💸 Не хватает ' + (dolg - dengi) + '₽', 'err'); return; }
+  dengi -= dolg;
+  toast('✅ Долг погашен: ' + dolg + '₽', 'ok');
+  dolg = 0;
+  sohranit();
+  render();
+}
+
+function kupitSkin(id) {
+  var sk = null;
+  for (var i = 0; i < skiny.length; i++) if (skiny[i].id == id) sk = skiny[i];
+  if (!sk) return;
+  if (dengi < sk.price) { toast('💸 Мало денег', 'err'); return; }
+  if (sk.price > 0) {
+    dengi -= sk.price;
+    toast('💼 Куплен скин: ' + sk.name, 'gold');
+  }
+  activeSkin = sk.id;
+  sohranit();
+  render();
+}
+
+function poluchLeaders() {
+  var s = localStorage.getItem('perekup_leaders');
+  if (s) { try { return JSON.parse(s); } catch(e) { return []; } }
+  return [];
+}
+
+function sohranLeaders(list) {
+  localStorage.setItem('perekup_leaders', JSON.stringify(list));
+}
+
+function otpravScore() {
+  if (!user) return;
+  var moyId = user.id || 0;
+  var imya = (user.first_name || 'Игрок') + ' ' + (user.last_name || '');
+  var list = poluchLeaders();
+  var nashel = false;
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].id == moyId) {
+      list[i].name = imya.trim();
+      list[i].balance = dengi;
+      list[i].level = lvl;
+      list[i].skin = activeSkin;
+      nashel = true;
+    }
+  }
+  if (!nashel) {
+    list.push({ id: moyId, name: imya.trim(), balance: dengi, level: lvl, skin: activeSkin });
+  }
+  sohranLeaders(list);
+  if (vkDostupen() && user.id) {
+    vkBridge.send('VKWebAppStorageSet', {
+      key: 'leader_' + user.id,
+      value: JSON.stringify({ name: imya.trim(), balance: dengi, level: lvl, skin: activeSkin })
+    }).catch(function() {});
+  }
+}
+
+function escapeHtml(s) {
+  s = String(s);
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return s;
+}
+
+function sekDoProdazhi(l) {
+  var proshlo = Date.now() - l.vremyaStart;
+  var ostalos = l.vremyaOzhidaniya - proshlo;
+  if (ostalos < 0) ostalos = 0;
+  return Math.ceil(ostalos / 1000);
+}
+
+function obnovitHotLot() {
+  if (Date.now() - vremyaHotLota > 5 * 60 * 1000) {
+    var rnd = Math.floor(Math.random() * tovari.length);
+    var it = tovari[rnd];
+    gotovHotLot = {
+      item: it,
+      cena: Math.floor(it.cena * 0.5),
+      uid: Date.now()
+    };
+    vremyaHotLota = Date.now();
+  }
+}
+
+function obnovitAkciyu() {
+  if (Date.now() - vremyaAkcii > 60 * 60 * 1000) {
+    var cats = ['tech', 'clothes', 'music', 'auto'];
+    akciyaCateg = cats[Math.floor(Math.random() * cats.length)];
+    vremyaAkcii = Date.now();
+  }
+}
+
+function nazvanieCateg(c) {
+  if (c == 'tech') return '📱 Техника';
+  if (c == 'clothes') return '👟 Одежда';
+  if (c == 'music') return '🎸 Музыка';
+  if (c == 'auto') return '🚗 Авто';
+  return c;
+}
+
+function render() {
+  obnovitHotLot();
+  obnovitAkciyu();
+
+  document.getElementById('balance').textContent = dengi + ' ₽';
+  document.getElementById('level').textContent = lvl;
+  document.getElementById('energy').textContent = energ + '/' + maxEnerg;
+
+  var c = document.getElementById('content');
+
+  if (tab == 'market') {
+    var html = '';
+
+    if (dolg > 0) {
+      html += '<div class="banner" style="background:linear-gradient(135deg,#4a0000,#6a0000);border-color:#ff6666">' +
+        '🏦 Долг банку: ' + dolg + '₽ — погаси!' +
+        '</div>';
+    }
+
+    if (akciyaCateg) {
+      html += '<div class="banner">📈 Акция: ' + nazvanieCateg(akciyaCateg) + ' +30% к цене!</div>';
+    }
+
+    if (gotovHotLot) {
+      html += '<div class="card gold">';
+      html += '<div class="card-row">';
+      html += '<div class="card-info">';
+      html += '<div class="card-name">🔥 ГОРЯЧИЙ ЛОТ (50% скидка)</div>';
+      html += '<div class="card-meta">' + gotovHotLot.item.name + '</div>';
+      html += '</div>';
+      html += '<div class="card-price">' + gotovHotLot.cena + ' ₽</div>';
+      html += '</div>';
+      html += '<button class="btn gold full" onclick="kupitHotLot()">🔥 Купить срочно!</button>';
+      html += '</div>';
+    }
+
+    for (var i = 0; i < tovari.length; i++) {
+      var it = tovari[i];
+      var zakr = it.lvl > lvl;
+      var cena = randomCena(it.cena);
+      if (akciyaCateg && it.category == akciyaCateg) cena = Math.floor(cena * 1.3);
+      var knopka = '';
+      if (zakr || dengi < cena) {
+        knopka = '<button class="btn" disabled>Купить</button>';
+      } else {
+        knopka = '<button class="btn" onclick="kupit(\'' + it.id + '\')">Купить</button>';
+      }
+      html += '<div class="card"><div class="card-row">';
+      html += '<div class="card-info">';
+      html += '<div class="card-name">' + it.name;
+      if (zakr) html += ' 🔒';
+      html += '</div>';
+      html += '<div class="card-meta">Ур. ' + it.lvl + '</div>';
+      html += '</div>';
+      html += '<div class="card-price">~' + cena + ' ₽</div>';
+      html += knopka;
+      html += '</div></div>';
+    }
+
+    html += '<div class="card red">';
+    html += '<div class="card-name" style="margin-bottom:8px">🕵️ Скупка краденого (дешёво, но риск)</div>';
+    for (var k = 0; k < tovariKrashennoe.length; k++) {
+      var kk = tovariKrashennoe[k];
+      var kcena = randomCena(kk.cena);
+      html += '<div class="card-row" style="margin-bottom:6px">';
+      html += '<div class="card-info">';
+      html += '<div class="card-name">' + kk.name + '</div>';
+      html += '<div class="card-meta">25% шанс штрафа</div>';
+      html += '</div>';
+      html += '<div class="card-price">' + kcena + ' ₽</div>';
+      if (dengi < kcena) {
+        html += '<button class="btn small" disabled>Купить</button>';
+      } else {
+        html += '<button class="btn small red" onclick="kupitKrashennoe(\'' + kk.id + '\')">Купить</button>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    c.innerHTML = html;
+  } else if (tab == 'inventory') {
+    if (inv.length == 0) { c.innerHTML = '<div class="empty">📦 Пусто. Купи что-нибудь!</div>'; return; }
+    var h = '';
+    for (var m2 = 0; m2 < inv.length; m2++) {
+      var m = inv[m2];
+      var tovar = naytiTovar(m.itemId);
+      if (!tovar) continue;
+      var apCena = Math.floor(tovar.ap * (1 + m.ap * 0.5));
+      var minC = minCenaTovara(tovar);
+      var maxC = maxCenaTovara(tovar);
+      h += '<div class="card';
+      if (m.krashennoe) h += ' red';
+      h += '">';
+      h += '<div class="card-row">';
+      h += '<div class="card-info">';
+      h += '<div class="card-name">' + tovar.name;
+      if (m.ap > 0) h += ' +' + m.ap;
+      if (m.krashennoe) h += ' 🕵️';
+      h += '</div>';
+      h += '<div class="card-meta">Куплено: ' + m.kupCena + '₽</div>';
+      h += '<div class="card-meta">Диапазон: ' + minC + '–' + maxC + '₽</div>';
+      h += '</div></div>';
+      h += '<div class="card-row" style="margin-top:8px">';
+      h += '<button class="btn small" onclick="apnut(' + m.uid + ')">🔧 ' + apCena + '₽</button>';
+      h += '<button class="btn small green" onclick="vystavitLot(' + m.uid + ')">🏷️ Выставить</button>';
+      h += '<button class="btn small" onclick="prodatMgnovenno(' + m.uid + ')">⚡ Срочно</button>';
+      h += '</div></div>';
+    }
+    c.innerHTML = h;
+  } else if (tab == 'lots') {
+    if (loty.length == 0) {
+      c.innerHTML = '<div class="empty">🏷️ Нет активных лотов<br><br>Выстави товар из сумки</div>';
+      return;
+    }
+    var hl = '<div class="lot-hint">💡 Дешёвая цена → быстро и надёжно. Дорогая → долго и рискованно.</div>';
+    for (var w = 0; w < loty.length; w++) {
+      var l = loty[w];
+      var t2 = naytiTovar(l.itemId);
+      var sek = sekDoProdazhi(l);
+      var gotov = sek <= 0;
+      var shans = l.shansProdagy || 50;
+      var progress = 0;
+      if (l.vremyaOzhidaniya > 0) {
+        progress = 100 - (sek * 1000 / l.vremyaOzhidaniya) * 100;
+        if (progress < 0) progress = 0;
+        if (progress > 100) progress = 100;
+      }
+      hl += '<div class="card' + (l.krashennoe ? ' red' : '') + '">';
+      hl += '<div class="card-row">';
+      hl += '<div class="card-info">';
+      hl += '<div class="card-name">' + t2.name;
+      if (l.ap > 0) hl += ' +' + l.ap;
+      if (l.krashennoe) hl += ' 🕵️';
+      hl += '</div>';
+      hl += '<div class="card-meta">Куплено: ' + l.kupCena + '₽</div>';
+      if (gotov) hl += '<div class="lot-chance">✅ Готов · шанс ' + shans + '%</div>';
+      else hl += '<div class="lot-timer">⏳ ' + sek + ' сек · шанс ' + shans + '%</div>';
+      hl += '</div>';
+      hl += '<div class="card-price">' + l.moyaCena + ' ₽</div>';
+      hl += '</div>';
+      hl += '<div class="lot-bar"><div class="lot-bar-in" style="width:' + progress + '%"></div></div>';
+      hl += '<div class="card-row" style="margin-top:8px">';
+      if (gotov) hl += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать (' + shans + '%)</button>';
+      else hl += '<button class="btn small" disabled>⏳ ' + sek + ' сек</button>';
+      hl += '<button class="btn small red" onclick="zabratLot(' + l.uid + ')">↩️ Снять</button>';
+      hl += '</div></div>';
+    }
+    c.innerHTML = hl;
+  } else if (tab == 'roulette') {
+    var now = Date.now();
+    var sutki = 24 * 60 * 60 * 1000;
+    var gotovR = (now - poslRul) >= sutki;
+
+    var hr = '<div class="roulette-box">';
+    hr += '<div class="roulette-icon">🎰</div>';
+    hr += '<div style="font-size:14px;margin-bottom:8px">Крути рулетку раз в день!</div>';
+    hr += '<div style="font-size:11px;color:#aaa;margin-bottom:10px">Ставка: 500₽</div>';
+    hr += '<div style="font-size:11px;color:#aaa;margin-bottom:10px">Призы: 0, 200, 500, 1000, 3000, 10000 или −2000</div>';
+    if (gotovR) {
+      hr += '<button class="btn gold full" onclick="krutitRuleku()">🎰 КРУТИТЬ!</button>';
+    } else {
+      var chas = Math.ceil((sutki - (now - poslRul)) / (60 * 60 * 1000));
+      hr += '<button class="btn full" disabled>⏳ Через ' + chas + ' ч.</button>';
+    }
+    hr += '</div>';
+
+    var now2 = Date.now();
+    var gotovB = (now2 - poslBonus) >= sutki;
+    hr += '<div class="card gold">';
+    hr += '<div class="card-name" style="margin-bottom:6px">🎁 Ежедневный бонус</div>';
+    hr += '<div class="card-meta">Серия: ' + seriyaDney + '/7 дней</div>';
+    hr += '<div class="card-meta">Награды: 300, 500, 800, 1200, 1800, 2500, 5000₽</div>';
+    if (gotovB) {
+      hr += '<button class="btn gold full" onclick="vzyatBonus()">🎁 Забрать бонус</button>';
+    } else {
+      var chas2 = Math.ceil((sutki - (now2 - poslBonus)) / (60 * 60 * 1000));
+      hr += '<button class="btn full" disabled>⏳ Через ' + chas2 + ' ч.</button>';
+    }
+    hr += '</div>';
+
+    c.innerHTML = hr;
+  } else if (tab == 'bank') {
+    var maxKredit = 5000 + lvl * 2000;
+    var hb = '';
+    hb += '<div class="card">';
+    hb += '<div class="card-name" style="margin-bottom:8px">🏦 Банк "ПерекуП"</div>';
+    hb += '<div class="card-meta">Возврат: +30% к сумме</div>';
+    if (dolg > 0) {
+      hb += '<div class="card-meta" style="color:#ff6666;margin-top:6px">💸 Твой долг: ' + dolg + '₽</div>';
+      hb += '<button class="btn green full" onclick="oplatitDolg()">✅ Погасить долг (' + dolg + '₽)</button>';
+    } else {
+      hb += '<div class="card-meta">Максимум: ' + maxKredit + '₽</div>';
+    }
+    hb += '</div>';
+
+    if (dolg == 0) {
+      var summy = [1000, 3000, 5000, maxKredit];
+      for (var s2 = 0; s2 < summy.length; s2++) {
+        var sm = summy[s2];
+        if (sm > maxKredit) continue;
+        hb += '<div class="card"><div class="card-row">';
+        hb += '<div class="card-info">';
+        hb += '<div class="card-name">Взять ' + sm + '₽</div>';
+        hb += '<div class="card-meta">Вернуть: ' + Math.floor(sm * 1.3) + '₽</div>';
+        hb += '</div>';
+        hb += '<button class="btn" onclick="vzyatKredit(' + sm + ')">Взять</button>';
+        hb += '</div></div>';
+      }
+    }
+    c.innerHTML = hb;
+  } else if (tab == 'ach') {
+    var ha = '';
+    var vypolneno = 0;
+    for (var a = 0; a < dostizheniya.length; a++) {
+      var d = dostizheniya[a];
+      if (d.done) vypolneno++;
+      ha += '<div class="ach';
+      if (d.done) ha += ' done';
+      ha += '">';
+      ha += '<div class="ach-icon">' + d.icon + '</div>';
+      ha += '<div class="ach-info">';
+      ha += '<div class="ach-name">' + d.name + '</div>';
+      ha += '<div class="ach-desc">' + d.desc + '</div>';
+      ha += '</div>';
+      if (d.done) {
+        ha += '<div class="ach-reward">✅ +' + d.reward + '₽</div>';
+      } else {
+        ha += '<div class="ach-reward">+' + d.reward + '₽</div>';
+      }
+      ha += '</div>';
+    }
+    ha = '<div class="lot-refresh" style="margin-bottom:10px">🏅 Выполнено: ' + vypolneno + '/' + dostizheniya.length + '</div>' + ha;
+    c.innerHTML = ha;
+  } else if (tab == 'skins') {
+    var hs = '<div class="lot-refresh">💼 Выбери скин для профиля</div>';
+    for (var sk = 0; sk < skiny.length; sk++) {
+      var s3 = skiny[sk];
+      hs += '<div class="skin';
+      if (activeSkin == s3.id) hs += ' active';
+      hs += '">';
+      hs += '<div class="skin-icon">' + s3.id + '</div>';
+      hs += '<div class="skin-info">';
+      hs += '<div class="skin-name">' + s3.name + '</div>';
+      hs += '<div class="card-meta">' + (s3.price == 0 ? 'Бесплатно' : s3.price + '₽') + '</div>';
+      hs += '</div>';
+      if (activeSkin == s3.id) {
+        hs += '<div class="ach-reward">✅ Выбран</div>';
+      } else if (dengi >= s3.price) {
+        hs += '<button class="btn small" onclick="kupitSkin(\'' + s3.id + '\')">' + (s3.price == 0 ? 'Выбрать' : 'Купить') + '</button>';
+      } else {
+        hs += '<button class="btn small" disabled>Нет денег</button>';
+      }
+      hs += '</div>';
+    }
+    c.innerHTML = hs;
+  } else if (tab == 'leaders') {
+    var list = poluchLeaders();
+    if (list.length == 0) { c.innerHTML = '<div class="empty">🏆 Пока никого нет</div>'; return; }
+    list.sort(function(a, b) { return b.balance - a.balance; });
+    var moyId = user ? user.id : 0;
+    var top10 = list.slice(0, 10);
+    var moyIndex = -1;
+    for (var z = 0; z < list.length; z++) if (list[z].id == moyId) moyIndex = z;
+    var out = '<div class="lb-refresh">🔄 Топ-10 игроков</div>';
+    for (var v = 0; v < top10.length; v++) {
+      var u = top10[v];
+      var klass = '';
+      var medal = '';
+      if (v == 0) { klass = 'gold'; medal = '🥇'; }
+      else if (v == 1) { klass = 'silver'; medal = '🥈'; }
+      else if (v == 2) { klass = 'bronze'; medal = '🥉'; }
+      else { medal = v + 1; }
+      var etoYa = (u.id == moyId);
+      var sk2 = u.skin || '👤';
+      out += '<div class="lb-row' + (etoYa ? ' me' : '') + '">';
+      out += '<div class="lb-rank ' + klass + '">' + medal + '</div>';
+      out += '<div class="lb-info">';
+      out += '<div class="lb-name">' + sk2 + ' ' + escapeHtml(u.name);
+      if (etoYa) out += ' (ты)';
+      out += '</div>';
+      out += '<div class="lb-sub">Уровень ' + u.level + '</div>';
+      out += '</div>';
+      out += '<div class="lb-balance">' + u.balance + ' ₽</div>';
+      out += '</div>';
+    }
+    if (moyIndex >= 10) {
+      out += '<div class="lb-refresh" style="margin-top:16px">📍 Твоё место</div>';
+      var ya = list[moyIndex];
+      out += '<div class="lb-row me">';
+      out += '<div class="lb-rank">' + (moyIndex + 1) + '</div>';
+      out += '<div class="lb-info">';
+      out += '<div class="lb-name">' + (ya.skin || '👤') + ' ' + escapeHtml(ya.name) + ' (ты)</div>';
+      out += '<div class="lb-sub">Уровень ' + ya.level + '</div>';
+      out += '</div>';
+      out += '<div class="lb-balance">' + ya.balance + ' ₽</div>';
+      out += '</div>';
+    }
+    c.innerHTML = out;
+  }
+}
+
+var vseTaby = document.querySelectorAll('.tab');
+for (var i = 0; i < vseTaby.length; i++) {
+  vseTaby[i].onclick = function() {
+    for (var j = 0; j < vseTaby.length; j++) vseTaby[j].classList.remove('active');
+    this.classList.add('active');
+    tab = this.getAttribute('data-tab');
+    render();
+  };
+}
+
+zagruzit();
+render();
+
+setInterval(function() {
+  if (energ < maxEnerg) {
+    energ = energ + 1;
+    sohranit();
+    render();
+  }
+}, 60000);
+
+setInterval(function() {
+  if (tab == 'lots' || tab == 'leaders' || tab == 'market') render();
+}, 1000);
+
+setInterval(function() {
+  proveritDostizheniya();
+  sohranit();
+}, 5000);
+</script>
+</body>
+</html>
