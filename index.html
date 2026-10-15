@@ -127,62 +127,33 @@
     color: #888;
   }
 
-  .name-box {
-    background: #333;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .name-box input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 6px;
-    border: 2px solid #555;
+  .lot-bar {
     background: #222;
-    color: white;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-  }
-  .name-box input:focus {
-    outline: none;
-    border-color: #66ccff;
-  }
-
-  .input-row {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    margin-top: 8px;
-  }
-  .input-row input {
-    flex: 1;
-    padding: 8px;
     border-radius: 6px;
-    border: 2px solid #555;
-    background: #222;
-    color: white;
-    font-size: 13px;
-    font-family: Arial, sans-serif;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 6px;
   }
-  .input-row input:focus {
-    outline: none;
-    border-color: #66ccff;
+  .lot-bar-in {
+    background: linear-gradient(90deg, #66ff66, #ffaa00);
+    height: 100%;
+    transition: width 0.5s;
   }
-
   .lot-timer {
     font-size: 11px;
     color: #ffaa00;
     margin-top: 4px;
   }
-
   .lot-hint {
     font-size: 10px;
     color: #888;
     margin-top: 4px;
     text-align: center;
+  }
+  .lot-chance {
+    font-size: 11px;
+    color: #66ccff;
+    margin-top: 4px;
   }
 </style>
 </head>
@@ -209,7 +180,6 @@
 
 <script>
 var user = null;
-var moyaImya = '';
 var dengi = 1000;
 var lvl = 1;
 var energ = 20;
@@ -226,8 +196,6 @@ var tovari = [
   { id: 'car', name: '🚗 Машина', cena: 10000, lvl: 5, ap: 3000 }
 ];
 
-var VREMYA_LOTA = 30000;
-
 function vkDostupen() {
   return typeof vkBridge !== 'undefined' && vkBridge && typeof vkBridge.send === 'function';
 }
@@ -237,20 +205,15 @@ if (vkDostupen()) {
   vkBridge.send('VKWebAppGetUserInfo')
     .then(function(u) {
       user = u;
-      if (!moyaImya) {
-        moyaImya = u.first_name || 'Игрок';
-      }
       otpravScore();
       render();
     })
     .catch(function() {
       user = { id: 0, first_name: 'Гость', last_name: '' };
-      if (!moyaImya) moyaImya = 'Гость';
       render();
     });
 } else {
   user = { id: 0, first_name: 'Гость', last_name: '' };
-  if (!moyaImya) moyaImya = 'Гость';
 }
 
 function toast(msg, tip) {
@@ -265,7 +228,6 @@ function toast(msg, tip) {
 
 function sohranit() {
   localStorage.setItem('perekup', JSON.stringify({
-    imya: moyaImya,
     dengi: dengi,
     lvl: lvl,
     energ: energ,
@@ -281,7 +243,6 @@ function zagruzit() {
   if (s) {
     try {
       var d = JSON.parse(s);
-      if (d.imya) moyaImya = d.imya;
       if (d.dengi) dengi = d.dengi;
       if (d.lvl) lvl = d.lvl;
       if (d.energ) energ = d.energ;
@@ -303,6 +264,23 @@ function minCenaTovara(item) {
 
 function maxCenaTovara(item) {
   return Math.floor(item.cena * 2.5);
+}
+
+function rasschitatShansICena(l, item) {
+  var minC = minCenaTovara(item);
+  var maxC = maxCenaTovara(item);
+  var diap = maxC - minC;
+  var otklonenie = (l.moyaCena - minC) / diap;
+  if (otklonenie < 0) otklonenie = 0;
+  if (otklonenie > 1) otklonenie = 1;
+
+  var shans = 95 - otklonenie * 85;
+  var vremya = 5 + otklonenie * 55;
+
+  l.shansProdagy = Math.round(shans);
+  l.vremyaOzhidaniya = Math.round(vremya * 1000);
+  l.vremyaStart = l.vremyaStart || l.vremya;
+  l.vremya = l.vremyaStart + l.vremyaOzhidaniya;
 }
 
 function kupit(itemId) {
@@ -366,42 +344,35 @@ function vystavitLot(uid) {
 
   var minC = minCenaTovara(item);
   var maxC = maxCenaTovara(item);
-  var rekomend = Math.floor(moy.kupCena * (1 + moy.ap * 0.4) * 1.2);
-  if (rekomend < minC) rekomend = minC;
-  if (rekomend > maxC) rekomend = maxC;
 
   var vvod = prompt(
     '💰 Выставь свою цену\n\n' +
-    'Рекомендуем: ' + rekomend + '₽\n' +
-    'Можно от ' + minC + ' до ' + maxC + '₽',
-    rekomend
+    'Можно от ' + minC + ' до ' + maxC + '₽\n\n' +
+    '💡 Дешёвая цена — продастся быстро\n' +
+    '💡 Дорогая цена — долго ждать',
+    minC
   );
 
   if (vvod === null) return;
   var moyaCena = parseInt(vvod);
 
-  if (isNaN(moyaCena)) {
-    toast('❌ Введи число!', 'err');
-    return;
-  }
-  if (moyaCena < minC) {
-    toast('📉 Слишком дёшево! Мин: ' + minC + '₽', 'err');
-    return;
-  }
-  if (moyaCena > maxC) {
-    toast('📈 Слишком дорого! Макс: ' + maxC + '₽', 'err');
-    return;
-  }
+  if (isNaN(moyaCena)) { toast('❌ Введи число!', 'err'); return; }
+  if (moyaCena < minC) { toast('📉 Слишком дёшево! Мин: ' + minC + '₽', 'err'); return; }
+  if (moyaCena > maxC) { toast('📈 Слишком дорого! Макс: ' + maxC + '₽', 'err'); return; }
 
   inv.splice(idx, 1);
-  loty.push({
+
+  var lot = {
     uid: Date.now() + Math.random(),
     itemId: moy.itemId,
     kupCena: moy.kupCena,
     ap: moy.ap,
     moyaCena: moyaCena,
-    vremya: Date.now()
-  });
+    vremyaStart: Date.now()
+  };
+  rasschitatShansICena(lot, item);
+
+  loty.push(lot);
   toast('🏷️ Лот выставлен за ' + moyaCena + '₽', 'ok');
   sohranit();
   render();
@@ -421,7 +392,7 @@ function zabratLot(uid) {
     ap: l.ap
   });
   loty.splice(idx, 1);
-  toast('↩️ Лот снят, товар в сумке', 'ok');
+  toast('↩️ Лот снят', 'ok');
   sohranit();
   render();
 }
@@ -436,12 +407,13 @@ function prodatLot(uid) {
 
   if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
 
-  var shans = 50 + Math.random() * 30;
+  var shans = l.shansProdagy || 50;
   var prodano = Math.random() * 100 < shans;
+
+  energ = energ - 1;
 
   if (prodano) {
     dengi = dengi + l.moyaCena;
-    energ = energ - 1;
     var prof = l.moyaCena - l.kupCena;
     loty.splice(idx, 1);
 
@@ -449,13 +421,12 @@ function prodatLot(uid) {
       lvl = lvl + 1;
       maxEnerg = maxEnerg + 2;
       energ = maxEnerg;
-      toast('🎉 Уровень ' + lvl + '! Продано за ' + l.moyaCena + '₽', 'ok');
+      toast('🎉 Уровень ' + lvl + '! +' + prof + '₽', 'ok');
     } else {
       toast('💰 Продано за ' + l.moyaCena + '₽ (' + (prof >= 0 ? '+' : '') + prof + ')', 'ok');
     }
   } else {
-    energ = energ - 1;
-    toast('😕 Покупатель не нашёлся... попробуй снова', 'err');
+    toast('😕 Покупатель не нашёлся... шанс был ' + shans + '%', 'err');
   }
   sohranit();
   render();
@@ -488,9 +459,9 @@ function prodatMgnovenno(uid) {
     lvl = lvl + 1;
     maxEnerg = maxEnerg + 2;
     energ = maxEnerg;
-    toast('🎉 Уровень ' + lvl + '! (срочно за ' + cenaProd + '₽)', 'ok');
+    toast('🎉 Уровень ' + lvl + '! (срочно)', 'ok');
   } else {
-    toast('⚡ Срочная продажа: ' + cenaProd + '₽ (' + (prof >= 0 ? '+' : '') + prof + ')', prof >= 0 ? 'ok' : 'err');
+    toast('⚡ Срочно: ' + cenaProd + '₽ (' + (prof >= 0 ? '+' : '') + prof + ')', prof >= 0 ? 'ok' : 'err');
   }
   sohranit();
   render();
@@ -511,12 +482,12 @@ function sohranLeaders(list) {
 function otpravScore() {
   if (!user) return;
   var moyId = user.id || 0;
-  var imyaDlyaTopa = moyaImya || 'Гость';
+  var imya = (user.first_name || 'Игрок') + ' ' + (user.last_name || '');
   var list = poluchLeaders();
   var nashel = false;
   for (var i = 0; i < list.length; i++) {
     if (list[i].id == moyId) {
-      list[i].name = imyaDlyaTopa;
+      list[i].name = imya.trim();
       list[i].balance = dengi;
       list[i].level = lvl;
       nashel = true;
@@ -525,7 +496,7 @@ function otpravScore() {
   if (!nashel) {
     list.push({
       id: moyId,
-      name: imyaDlyaTopa,
+      name: imya.trim(),
       balance: dengi,
       level: lvl
     });
@@ -534,7 +505,7 @@ function otpravScore() {
   if (vkDostupen() && user.id) {
     vkBridge.send('VKWebAppStorageSet', {
       key: 'leader_' + user.id,
-      value: JSON.stringify({ name: imyaDlyaTopa, balance: dengi, level: lvl })
+      value: JSON.stringify({ name: imya.trim(), balance: dengi, level: lvl })
     }).catch(function() {});
   }
 }
@@ -548,24 +519,11 @@ function escapeHtml(s) {
   return s;
 }
 
-function vremyaOstalos(lot) {
-  var proshlo = Date.now() - lot.vremya;
-  var ostalos = VREMYA_LOTA - proshlo;
+function sekDoProdazhi(l) {
+  var proshlo = Date.now() - l.vremyaStart;
+  var ostalos = l.vremyaOzhidaniya - proshlo;
   if (ostalos < 0) ostalos = 0;
-  var sek = Math.ceil(ostalos / 1000);
-  return sek;
-}
-
-function sohranitImya() {
-  var vvod = document.getElementById('imyaInput');
-  if (!vvod) return;
-  var novoe = vvod.value.trim();
-  if (novoe.length < 2) { toast('❌ Минимум 2 символа', 'err'); return; }
-  if (novoe.length > 15) { toast('❌ Максимум 15 символов', 'err'); return; }
-  moyaImya = novoe;
-  toast('✅ Имя сохранено: ' + novoe, 'ok');
-  sohranit();
-  render();
+  return Math.ceil(ostalos / 1000);
 }
 
 function render() {
@@ -577,11 +535,6 @@ function render() {
 
   if (tab == 'market') {
     var html = '';
-    html += '<div class="name-box">';
-    html += '<input type="text" id="imyaInput" value="' + escapeHtml(moyaImya) + '" maxlength="15" placeholder="Твоё имя">';
-    html += '<button class="btn" onclick="sohranitImya()">💾</button>';
-    html += '</div>';
-
     for (var i = 0; i < tovari.length; i++) {
       var it = tovari[i];
       var zakr = it.lvl > lvl;
@@ -626,7 +579,8 @@ function render() {
       h += '<div class="card-name">' + tovar.name;
       if (m.ap > 0) h += ' +' + m.ap;
       h += '</div>';
-      h += '<div class="card-meta">Куплено: ' + m.kupCena + '₽ · Диапазон: ' + minC + '–' + maxC + '₽</div>';
+      h += '<div class="card-meta">Куплено: ' + m.kupCena + '₽</div>';
+      h += '<div class="card-meta">Диапазон цен: ' + minC + '–' + maxC + '₽</div>';
       h += '</div>';
       h += '</div>';
       h += '<div class="card-row" style="margin-top:8px">';
@@ -639,18 +593,27 @@ function render() {
     c.innerHTML = h;
   } else if (tab == 'lots') {
     if (loty.length == 0) {
-      c.innerHTML = '<div class="empty">🏷️ Нет активных лотов<br><br>Выстави товар из сумки, чтобы продать по своей цене</div>';
+      c.innerHTML = '<div class="empty">🏷️ Нет активных лотов<br><br>Выстави товар из сумки</div>';
       return;
     }
     var hl = '';
-    hl += '<div class="lot-hint">Выставил цену — жди покупателя. Энергия тратится за попытку продажи.</div>';
+    hl += '<div class="lot-hint">💡 Дешевле цена → быстрее продажа и выше шанс. Дорого → долго ждать и риск провала.</div>';
     for (var w = 0; w < loty.length; w++) {
       var l = loty[w];
       var t2 = null;
       for (var e = 0; e < tovari.length; e++) {
         if (tovari[e].id == l.itemId) t2 = tovari[e];
       }
-      var sek = vremyaOstalos(l);
+      var sek = sekDoProdazhi(l);
+      var gotov = sek <= 0;
+      var shans = l.shansProdagy || 50;
+
+      var progress = 0;
+      if (l.vremyaOzhidaniya > 0) {
+        progress = 100 - (sek * 1000 / l.vremyaOzhidaniya) * 100;
+        if (progress < 0) progress = 0;
+        if (progress > 100) progress = 100;
+      }
 
       hl += '<div class="card">';
       hl += '<div class="card-row">';
@@ -659,15 +622,20 @@ function render() {
       if (l.ap > 0) hl += ' +' + l.ap;
       hl += '</div>';
       hl += '<div class="card-meta">Куплено за ' + l.kupCena + '₽</div>';
-      hl += '<div class="lot-timer">⏳ Готов к продаже через: ' + sek + ' сек</div>';
+      if (gotov) {
+        hl += '<div class="lot-chance">✅ Готов к продаже · шанс ' + shans + '%</div>';
+      } else {
+        hl += '<div class="lot-timer">⏳ Осталось: ' + sek + ' сек · шанс ' + shans + '%</div>';
+      }
       hl += '</div>';
       hl += '<div class="card-price">' + l.moyaCena + ' ₽</div>';
       hl += '</div>';
+      hl += '<div class="lot-bar"><div class="lot-bar-in" style="width:' + progress + '%"></div></div>';
       hl += '<div class="card-row" style="margin-top:8px">';
-      if (sek > 0) {
-        hl += '<button class="btn small" disabled>⏳ Жди ' + sek + ' сек</button>';
+      if (gotov) {
+        hl += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать (' + shans + '%)</button>';
       } else {
-        hl += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать</button>';
+        hl += '<button class="btn small" disabled>⏳ Жди ' + sek + ' сек</button>';
       }
       hl += '<button class="btn small red" onclick="zabratLot(' + l.uid + ')">↩️ Снять</button>';
       hl += '</div>';
