@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ПерекуП</title>
 <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>
+  if (typeof eruda !== 'undefined') eruda.init();
+</script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -151,7 +155,6 @@ var lvl = 1;
 var energ = 20;
 var maxEnerg = 20;
 var inv = [];
-var tekTab = 'market';
 var tab = 'market';
 
 var tovari = [
@@ -162,17 +165,29 @@ var tovari = [
   { id: 'car', name: '🚗 Машина', cena: 10000, lvl: 5, ap: 3000 }
 ];
 
-if (typeof VK_Bridge !== 'undefined') {
-  VK_Bridge.send('VKWebAppInit').catch(function() {});
-  VK_Bridge.send('VKWebAppGetUserInfo')
+function vkDostupen() {
+  return typeof vkBridge !== 'undefined' && vkBridge && typeof vkBridge.send === 'function';
+}
+
+if (vkDostupen()) {
+  vkBridge.send('VKWebAppInit').then(function() {
+    console.log('VKWebAppInit OK');
+  }).catch(function(e) {
+    console.log('VKWebAppInit ошибка', e);
+  });
+
+  vkBridge.send('VKWebAppGetUserInfo')
     .then(function(u) {
       user = u;
       otpravScore();
+      console.log('Юзер загружен', u);
     })
-    .catch(function() {
+    .catch(function(e) {
+      console.log('Юзер не загружен', e);
       user = { id: 0, first_name: 'Гость', last_name: '' };
     });
 } else {
+  console.log('VK Bridge не найден — работаем как сайт');
   user = { id: 0, first_name: 'Гость', last_name: '' };
 }
 
@@ -225,9 +240,7 @@ function randomCena(baza) {
 function kupit(itemId) {
   var item = null;
   for (var i = 0; i < tovari.length; i++) {
-    if (tovari[i].id == itemId) {
-      item = tovari[i];
-    }
+    if (tovari[i].id == itemId) item = tovari[i];
   }
   if (!item) return;
   if (item.lvl > lvl) {
@@ -352,8 +365,8 @@ function otpravScore() {
     });
   }
   sohranLeaders(list);
-  if (typeof VK_Bridge !== 'undefined' && user.id) {
-    VK_Bridge.send('VKWebAppStorageSet', {
+  if (vkDostupen() && user.id) {
+    vkBridge.send('VKWebAppStorageSet', {
       key: 'leader_' + user.id,
       value: JSON.stringify({ name: moyName.trim(), balance: dengi, level: lvl })
     }).catch(function() {});
@@ -375,17 +388,15 @@ function render() {
   document.getElementById('energy').textContent = energ + '/' + maxEnerg;
 
   var c = document.getElementById('content');
-  var html = '';
 
   if (tab == 'market') {
+    var html = '';
     for (var i = 0; i < tovari.length; i++) {
       var it = tovari[i];
       var zakr = it.lvl > lvl;
       var cena = randomCena(it.cena);
       var knopka = '';
-      if (zakr) {
-        knopka = '<button class="btn" disabled>Купить</button>';
-      } else if (dengi < cena) {
+      if (zakr || dengi < cena) {
         knopka = '<button class="btn" disabled>Купить</button>';
       } else {
         knopka = '<button class="btn" onclick="kupit(\'' + it.id + '\')">Купить</button>';
@@ -503,9 +514,7 @@ setInterval(function() {
 }, 60000);
 
 setInterval(function() {
-  if (tab == 'leaders') {
-    render();
-  }
+  if (tab == 'leaders') render();
 }, 30000);
 </script>
 </body>
