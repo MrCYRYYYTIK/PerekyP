@@ -23,7 +23,7 @@ function renderBezopasno(funkciya, c, v) {
     funkciya(c, v);
   } catch(e) {
     console.error('Ошибка рендера:', e);
-    c.innerHTML = '<div class="empty">⚠️ Ошибка в этой вкладке<br><br>Обнови игру или перезайди</div>';
+    c.innerHTML = '<div class="empty">⚠️ Ошибка в этой вкладке<br><br>Обнови игру</div>';
   }
 }
 
@@ -50,24 +50,6 @@ function render() {
 
 function renderMarket(c, v) {
   var html = '';
-  var mojSon = (poslSonDen !== v.den) && (v.chas >= SON_S || v.chas < SON_DO_CHASA);
-  var dom = naytiDom(moeDom);
-  html += '<div class="card purple">';
-  html += '<div class="card-row">';
-  html += '<div class="card-info">';
-  html += '<div class="card-name">' + dom.icon + ' ' + dom.name + '</div>';
-  html += '<div class="card-meta">Сон: +' + dom.son + ' ⚡</div>';
-  html += '</div>';
-  if (mojSon && energ < maxEnerg) {
-    html += '<button class="btn purple" onclick="sest()">😴 Спать</button>';
-  } else if (energ >= maxEnerg) {
-    html += '<button class="btn" disabled>⚡ Полная</button>';
-  } else if (poslSonDen === v.den) {
-    html += '<button class="btn" disabled>✅ Спал</button>';
-  } else {
-    html += '<button class="btn" disabled>⏳ Ночь</button>';
-  }
-  html += '</div></div>';
 
   if (dolg > 0) {
     html += '<div class="banner" style="background:linear-gradient(135deg,#4a0000,#6a0000);border-color:#ff6666">🏦 Долг: ' + formatChislo(dolg) + '₽</div>';
@@ -330,7 +312,7 @@ function renderSettings(c, v) {
   hst += '<div class="card purple">';
   hst += '<div class="card-name">📅 Игровое время</div>';
   hst += '<div class="card-meta">День ' + v.den + ' · ' + formatTime(v.chas, v.min) + '</div>';
-  hst += '<div class="card-meta">В игре: 2 сек = 1 мин · Вне игры: 1 сек = 1 сек</div>';
+  hst += '<div class="card-meta">В игре: 1 сек = 1 мин · Вне игры: 1 сек = 1 сек</div>';
   hst += '</div>';
 
   hst += '<div class="card">';
@@ -349,4 +331,4 @@ function renderSettings(c, v) {
   hst += '<button class="btn red full" onclick="sbrosProgressa()">Сбросить прогресс</button>';
   hst += '</div>';
   c.innerHTML = hst;
-    }
+        }
