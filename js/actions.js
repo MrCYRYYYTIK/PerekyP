@@ -77,6 +77,7 @@ function apnut(uid) {
   dengi = dengi - stoimost;
   energ = energ - en;
   moy.ap = moy.ap + 1;
+  if (moy.ap === MAX_APGREYD) apnutoDo5++;
   dobavitOpyt(Math.floor(stoimost / EDINIC_OPYT_ZA_APGREYD));
   toast('🔧 Улучшено до +' + moy.ap + ' (−' + en + ' ⚡)', 'ok');
   sohranit();
@@ -159,6 +160,7 @@ function podtverdLota() {
   };
   rasschitatShansICena(lot, item);
   loty.push(lot);
+  vystavlenoLotov++;
   toast('🏷️ Лот за ' + formatChislo(moyaCena) + '₽', 'ok');
   lotTekushchiyUid = null;
   zakrModal('modalLota');
@@ -261,6 +263,7 @@ function sest() {
 
   var novoeVremya = vremyaIgry();
   poslSonDen = novoeVremya.den;
+  pospalRaz++;
 
   dobavitOpyt(EDINIC_OPYT_ZA_SON);
 
@@ -290,6 +293,8 @@ function kupitEdu(id) {
   energ = energ + e.energ;
   if (energ > maxEnerg) energ = maxEnerg;
   poslEdaMin = tekMin;
+  sEdeno++;
+  if (e.id === 'rest') sEdenoRestoran++;
   toast('🍽️ ' + e.name + ': +' + e.energ + ' ⚡', 'ok');
   sohranit();
   render();
@@ -325,6 +330,7 @@ function kupitMesto() {
   dengi -= d.cena;
   vtoroyDom = 'mesto';
   toast('🏗️ Место куплено!', 'gold');
+  proveritDostizheniya();
   sohranit();
   render();
 }
@@ -353,6 +359,7 @@ function vzyatKredit(summy) {
   if (summy > maxK) { toast('❌ Максимум ' + formatChislo(maxK), 'err'); return; }
   dengi += summy;
   dolg = Math.floor(summy * 1.3);
+  bralKredit = true;
   toast('🏦 Взял ' + formatChislo(summy) + '₽. Вернуть: ' + formatChislo(dolg) + '₽', 'ok');
   sohranit();
   render();
@@ -364,6 +371,8 @@ function oplatitDolg() {
   dengi -= dolg;
   toast('✅ Долг погашен: ' + formatChislo(dolg), 'ok');
   dolg = 0;
+  platilDolg = true;
+  proveritDostizheniya();
   sohranit();
   render();
 }
@@ -375,9 +384,12 @@ function kupitSkin(id) {
   if (dengi < sk.price) { toast('💸 Мало денег', 'err'); return; }
   if (sk.price > 0) {
     dengi -= sk.price;
+    if (sk.id === '👑') skinKingKupil = true;
+    if (sk.id === '🐲') skinDragonKupil = true;
     toast('💼 Куплен: ' + sk.name, 'gold');
   }
   activeSkin = sk.id;
+  proveritDostizheniya();
   sohranit();
   render();
 }
@@ -576,6 +588,8 @@ function admVseDostizheniya() {
 
 function admVseSkiny() {
   activeSkin = '🐲';
+  skinKingKupil = true;
+  skinDragonKupil = true;
   toast('💼 Открыт скин Дракон', 'gold');
   sohranit(); render();
 }
@@ -608,6 +622,7 @@ function admOchistitLoty() {
 
 function admObolg() {
   dolg = 0;
+  platilDolg = true;
   toast('✅ Долг обнулён', 'gold');
   sohranit(); render();
 }
@@ -621,6 +636,8 @@ function admBystroBogat() {
   moeDom = 'mansion';
   for (var i = 0; i < dostizheniya.length; i++) dostizheniya[i].done = true;
   activeSkin = '🐲';
+  skinKingKupil = true;
+  skinDragonKupil = true;
   toast('💎 БОГАЧ! +10 млн, Ур. 50, особняк', 'gold');
   sohranit(); render();
 }
@@ -637,6 +654,15 @@ function admBystroStart() {
   moeDom = 'street';
   vtoroyDom = null;
   activeSkin = '👤';
+  apnutoDo5 = 0;
+  vystavlenoLotov = 0;
+  sEdeno = 0;
+  sEdenoRestoran = 0;
+  pospalRaz = 0;
+  skinKingKupil = false;
+  skinDragonKupil = false;
+  bralKredit = false;
+  platilDolg = false;
   toast('🔄 Откат до старта', 'ok');
   sohranit(); render();
-}
+  }
