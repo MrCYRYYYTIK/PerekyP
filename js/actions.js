@@ -47,7 +47,7 @@ function kupit(itemId) {
     ap: 0
   });
   kupilVsego++;
-  dobavitOpyt(Math.floor(cena / 50));
+  dobavitOpyt(Math.floor(cena / EDINIC_OPYT_ZA_POKUPKU));
   proveritDostizheniya();
   toast('✅ Куплено за ' + formatChislo(cena) + '₽', 'ok');
   sohranit();
@@ -59,7 +59,7 @@ function apnut(uid) {
   for (var i = 0; i < inv.length; i++) if (inv[i].uid == uid) moy = inv[i];
   if (!moy) return;
   var item = naytiTovar(moy.itemId);
-  if (moy.ap >= 5) { toast('🔧 Максимум +5', 'err'); return; }
+  if (moy.ap >= MAX_APGREYD) { toast('🔧 Максимум +' + MAX_APGREYD, 'err'); return; }
   var stoimost = stoimostApa(item, moy.ap);
   var en = energiyaZaAp(item, moy.ap);
   if (dengi < stoimost) { toast('💸 Нужно ' + formatChislo(stoimost) + '₽', 'err'); return; }
@@ -68,13 +68,15 @@ function apnut(uid) {
   dengi = dengi - stoimost;
   energ = energ - en;
   moy.ap = moy.ap + 1;
-  dobavitOpyt(Math.floor(stoimost / 100));
+  dobavitOpyt(Math.floor(stoimost / EDINIC_OPYT_ZA_APGREYD));
   toast('🔧 Улучшено до +' + moy.ap + ' (−' + en + ' ⚡)', 'ok');
   sohranit();
   render();
 }
 
-function vystavitLot(uid) {
+var lotTekushchiyUid = null;
+
+function otkritModalLota(uid) {
   var idx = -1;
   for (var i = 0; i < inv.length; i++) if (inv[i].uid == uid) idx = i;
   if (idx == -1) return;
@@ -83,22 +85,57 @@ function vystavitLot(uid) {
   var minC = minCenaTovara(item, moy.ap);
   var maxC = maxCenaTovara(item, moy.ap);
 
-  var vvod = prompt(
-    '💰 Выставь свою цену\n\n' +
-    'Можно от ' + formatChislo(minC) + ' до ' + formatChislo(maxC) + '₽\n\n' +
-    'Апгрейд: +' + moy.ap + ' (повышает шанс)\n' +
-    'Комиссия: ' + formatChislo(komissiyaZa(maxC)) + '₽ (макс)',
-    minC
-  );
+  lotTekushchiyUid = uid;
 
-  if (vvod === null) return;
-  var moyaCena = parseInt(vvod);
-  if (isNaN(moyaCena)) { toast('❌ Введи число!', 'err'); return; }
-  if (moyaCena < minC) { toast('📉 Минимум ' + formatChislo(minC), 'err'); return; }
-  if (moyaCena > maxC) { toast('📈 Максимум ' + formatChislo(maxC), 'err'); return; }
+  var modal = document.getElementById('modalLota');
+  if (!modal) return;
+  document.getElementById('lotaItemName').textContent = item.name + (moy.ap > 0 ? ' +' + moy.ap : '');
+  document.getElementById('lotaMin').textContent = formatChislo(minC);
+  document.getElementById('lotaMax').textContent = formatChislo(maxC);
+  document.getElementById('lotaCena').value = Math.floor((minC + maxC) / 2);
+  document.getElementById('lotaCena').min = minC;
+  document.getElementById('lotaCena').max = maxC;
+  document.getElementById('lotaKomissiya').textContent = formatChislo(komissiyaZa(maxC));
+  document.getElementById('lotaOshibka').style.display = 'none';
+
+  otkritModal('modalLota');
+}
+
+function podtverdLota() {
+  if (lotTekushchiyUid === null) return;
+  var idx = -1;
+  for (var i = 0; i < inv.length; i++) if (inv[i].uid == lotTekushchiyUid) idx = i;
+  if (idx == -1) { zakrModal('modalLota'); return; }
+  var moy = inv[idx];
+  var item = naytiTovar(moy.itemId);
+  var minC = minCenaTovara(item, moy.ap);
+  var maxC = maxCenaTovara(item, moy.ap);
+
+  var moyaCena = parseInt(document.getElementById('lotaCena').value);
+  var osh = document.getElementById('lotaOshibka');
+
+  if (isNaN(moyaCena)) {
+    osh.textContent = '❌ Введи число!';
+    osh.style.display = 'block';
+    return;
+  }
+  if (moyaCena < minC) {
+    osh.textContent = '📉 Минимум ' + formatChislo(minC) + '₽';
+    osh.style.display = 'block';
+    return;
+  }
+  if (moyaCena > maxC) {
+    osh.textContent = '📈 Максимум ' + formatChislo(maxC) + '₽';
+    osh.style.display = 'block';
+    return;
+  }
 
   var kom = komissiyaZa(moyaCena);
-  if (dengi < kom) { toast('💸 Нужно ' + formatChislo(kom) + '₽ на комиссию', 'err'); return; }
+  if (dengi < kom) {
+    osh.textContent = '💸 Нужно ' + formatChislo(kom) + '₽ на комиссию';
+    osh.style.display = 'block';
+    return;
+  }
 
   dengi = dengi - kom;
   inv.splice(idx, 1);
@@ -108,11 +145,14 @@ function vystavitLot(uid) {
     kupCena: moy.kupCena,
     ap: moy.ap,
     moyaCena: moyaCena,
-    vremyaStart: Date.now()
+    vremyaStart: Date.now(),
+    srokDo: Date.now() + SROK_LOTA_MS
   };
   rasschitatShansICena(lot, item);
   loty.push(lot);
   toast('🏷️ Лот за ' + formatChislo(moyaCena) + '₽', 'ok');
+  lotTekushchiyUid = null;
+  zakrModal('modalLota');
   sohranit();
   render();
 }
@@ -146,13 +186,13 @@ function prodatLot(uid) {
   energ = energ - 1;
 
   if (prodano) {
-    var komissiya = Math.floor(l.moyaCena * 0.1);
+    var komissiya = Math.floor(l.moyaCena * KOMISSIYA_PRODAZHI_PROCENT);
     var itog = l.moyaCena - komissiya;
     dengi = dengi + itog;
     var prof = itog - l.kupCena;
     loty.splice(idx, 1);
     prodalVsego++;
-    dobavitOpyt(Math.floor(l.moyaCena / 50));
+    dobavitOpyt(Math.floor(l.moyaCena / EDINIC_OPYT_ZA_POKUPKU));
     proveritDostizheniya();
     toast('💰 Продано! ' + formatChislo(itog) + '₽ (комиссия ' + formatChislo(komissiya) + '₽)', 'ok');
   } else {
@@ -174,7 +214,7 @@ function prodatMgnovenno(uid) {
   var item = naytiTovar(moy.itemId);
   var maxC = maxCenaTovara(item, moy.ap);
   var cenaProd = Math.floor(maxC * 0.75);
-  var komissiya = Math.floor(cenaProd * 0.1);
+  var komissiya = Math.floor(cenaProd * KOMISSIYA_PRODAZHI_PROCENT);
   var itog = cenaProd - komissiya;
   var prof = itog - moy.kupCena;
 
@@ -182,7 +222,7 @@ function prodatMgnovenno(uid) {
   energ = energ - 1;
   inv.splice(idx, 1);
   prodalVsego++;
-  dobavitOpyt(Math.floor(cenaProd / 100));
+  dobavitOpyt(Math.floor(cenaProd / EDINIC_OPYT_ZA_APGREYD));
   proveritDostizheniya();
   toast('⚡ Срочно: ' + formatChislo(itog) + '₽', prof >= 0 ? 'ok' : 'err');
   sohranit();
@@ -192,15 +232,15 @@ function prodatMgnovenno(uid) {
 function sest() {
   var v = vremyaIgry();
   if (poslSonDen === v.den) { toast('😴 Ты уже спал сегодня', 'err'); return; }
-  if (v.chas >= 9 && v.chas < 22) { toast('😴 Спать можно только ночью (22:00–09:00)', 'err'); return; }
+  if (v.chas >= SON_DO_CHASA && v.chas < SON_S) { toast('😴 Спать можно только ночью (22:00–09:00)', 'err'); return; }
 
   var chasSpal;
-  if (v.chas >= 22) chasSpal = (24 - v.chas) + 9;
-  else chasSpal = 9 - v.chas;
-  if (chasSpal > 11) chasSpal = 11;
+  if (v.chas >= SON_S) chasSpal = (24 - v.chas) + SON_DO_CHASA;
+  else chasSpal = SON_DO_CHASA - v.chas;
+  if (chasSpal > SON_CHASOV_NORMA) chasSpal = SON_CHASOV_NORMA;
 
   var dom = naytiDom(moeDom);
-  var dobavka = Math.floor(dom.son * (chasSpal / 11));
+  var dobavka = Math.floor(dom.son * (chasSpal / SON_CHASOV_NORMA));
   if (dobavka < 1) dobavka = 1;
 
   energ = energ + dobavka;
@@ -212,6 +252,8 @@ function sest() {
 
   var novoeVremya = vremyaIgry();
   poslSonDen = novoeVremya.den;
+
+  dobavitOpyt(EDINIC_OPYT_ZA_SON);
 
   toast('😴 Спал ' + chasSpal + ' ч. +' + dobavka + ' ⚡', 'ok');
   sohranit();
@@ -226,8 +268,8 @@ function kupitEdu(id) {
 
   var v = vremyaIgry();
   var tekMin = v.den * 1440 + v.chas * 60 + v.min;
-  if (tekMin - poslEdaMin < 30) {
-    var ostalos = 30 - (tekMin - poslEdaMin);
+  if (tekMin - poslEdaMin < EDA_KULDAUN_MIN) {
+    var ostalos = EDA_KULDAUN_MIN - (tekMin - poslEdaMin);
     toast('🍽️ Сытый! Через ' + ostalos + ' игровых мин.', 'err');
     return;
   }
@@ -289,7 +331,7 @@ function vzyatBonus() {
   var bonus = summy[seriyaDney - 1];
   dengi += bonus;
   poslBonus = now;
-  dobavitOpyt(50);
+  dobavitOpyt(EDINIC_OPYT_ZA_BONUS);
   toast('🎁 День ' + seriyaDney + ': +' + formatChislo(bonus) + '₽!', 'gold');
   zakrModal('modalBonus');
   setTimeout(function() {
@@ -578,9 +620,7 @@ function admVseSkiny() {
 function admProdatVseLoty() {
   if (loty.length === 0) return toast('Нет лотов', 'err');
   var summa = 0;
-  for (var i = 0; i < loty.length; i++) {
-    summa += loty[i].moyaCena;
-  }
+  for (var i = 0; i < loty.length; i++) summa += loty[i].moyaCena;
   dengi += summa;
   var kolvo = loty.length;
   loty = [];
@@ -618,7 +658,7 @@ function admBystroBogat() {
   moeDom = 'mansion';
   for (var i = 0; i < dostizheniya.length; i++) dostizheniya[i].done = true;
   activeSkin = '🐲';
-  toast('💎 БОГАЧ! +10 млн, Ур. 50, особняк, все награды', 'gold');
+  toast('💎 БОГАЧ! +10 млн, Ур. 50, особняк', 'gold');
   sohranit(); render();
 }
 
@@ -636,4 +676,4 @@ function admBystroStart() {
   activeSkin = '👤';
   toast('🔄 Откат до старта', 'ok');
   sohranit(); render();
-}
+      }
