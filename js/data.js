@@ -1,0 +1,114 @@
+var MNOZHITEL_V_IGRE = 30;
+
+var eda = [
+  { id: 'shaurma', name: '🥙 Шаурма', cena: 500, energ: 1, desc: 'Быстро и дёшево' },
+  { id: 'pizza', name: '🍕 Пицца', cena: 2000, energ: 6, desc: 'Средний вариант' },
+  { id: 'burger', name: '🍔 Бургер', cena: 5000, energ: 15, desc: 'Сытный обед' },
+  { id: 'rest', name: '🍾 Ресторан', cena: 15000, energ: 50, desc: 'Полный запас' }
+];
+
+var doma = [
+  { id: 'street', name: 'Улица', icon: '🛣️', cena: 0, son: 3, desc: 'Спишь на лавке' },
+  { id: 'garage', name: 'Гараж', icon: '🏚️', cena: 50000, son: 6, desc: 'Хоть крыша есть' },
+  { id: 'flat_1', name: 'Однушка', icon: '🏠', cena: 300000, son: 10, desc: 'Своя квартира' },
+  { id: 'flat_2', name: 'Двушка', icon: '🏢', cena: 800000, son: 15, desc: 'Просторно' },
+  { id: 'house', name: 'Дом', icon: '🏡', cena: 2500000, son: 20, desc: 'Настоящий дом' },
+  { id: 'villa', name: 'Вилла', icon: '🏰', cena: 10000000, son: 25, desc: 'Роскошь' },
+  { id: 'mansion', name: 'Особняк', icon: '🏛️', cena: 50000000, son: 30, desc: 'Мечта магната' }
+];
+
+var dostizheniya = [
+  { id: 'first_buy', name: 'Первая покупка', desc: 'Купи первый товар', icon: '🛒', reward: 10, done: false },
+  { id: 'first_sell', name: 'Первая продажа', desc: 'Продай первый товар', icon: '💰', reward: 20, done: false },
+  { id: 'sell_10', name: 'Десять сделок', desc: 'Продай 10 товаров', icon: '📈', reward: 100, done: false },
+  { id: 'sell_50', name: 'Перекуп-про', desc: 'Продай 50 товаров', icon: '🔥', reward: 500, done: false },
+  { id: 'sell_200', name: 'Магнат', desc: 'Продай 200 товаров', icon: '💎', reward: 5000, done: false },
+  { id: 'lvl_5', name: 'Пятый уровень', desc: 'Достигни 5 уровня', icon: '⭐', reward: 200, done: false },
+  { id: 'lvl_10', name: 'Десятый уровень', desc: 'Достигни 10 уровня', icon: '🌟', reward: 1000, done: false },
+  { id: 'lvl_20', name: 'Двадцатый уровень', desc: 'Достигни 20 уровня', icon: '🏆', reward: 10000, done: false },
+  { id: 'money_10k', name: 'Первые 10000', desc: 'Накопи 10000₽', icon: '💵', reward: 300, done: false },
+  { id: 'money_100k', name: 'Сто тысяч', desc: 'Накопи 100000₽', icon: '🏆', reward: 2000, done: false },
+  { id: 'money_1m', name: 'Миллионер', desc: 'Накопи 1 000 000₽', icon: '👑', reward: 20000, done: false },
+  { id: 'money_10m', name: 'Десять миллионов', desc: 'Накопи 10 000 000₽', icon: '💠', reward: 100000, done: false },
+  { id: 'dom_house', name: 'Свой дом', desc: 'Купи дом', icon: '🏡', reward: 10000, done: false },
+  { id: 'dom_villa', name: 'Вилла', desc: 'Купи виллу', icon: '🏰', reward: 50000, done: false },
+  { id: 'dom_mansion', name: 'Особняк', desc: 'Купи особняк', icon: '🏛️', reward: 200000, done: false },
+  { id: 'roulette_win', name: 'Джекпот', desc: 'Выиграй 10000₽', icon: '🎰', reward: 500, done: false }
+];
+
+var skiny = [
+  { id: '👤', name: 'Обычный', price: 0 },
+  { id: '💼', name: 'Бизнесмен', price: 1000 },
+  { id: '🕶️', name: 'Крутой', price: 3000 },
+  { id: '🎩', name: 'Магнат', price: 10000 },
+  { id: '👑', name: 'Король рынка', price: 50000 },
+  { id: '🤴', name: 'Император', price: 200000 },
+  { id: '🐲', name: 'Дракон', price: 1000000 }
+];
+
+var tovari = [
+  { id: 'phone', name: '📱 Старый телефон', cena: 300, lvl: 1, ap: 100, category: 'tech' },
+  { id: 'sneak', name: '👟 Кроссовки', cena: 1000, lvl: 1, ap: 300, category: 'clothes' },
+  { id: 'bike', name: '🚲 Велосипед', cena: 3000, lvl: 2, ap: 700, category: 'tech' },
+  { id: 'laptop', name: '💻 Ноутбук', cena: 8000, lvl: 3, ap: 1800, category: 'tech' },
+  { id: 'guitar', name: '🎸 Гитара', cena: 15000, lvl: 4, ap: 3000, category: 'music' },
+  { id: 'tv', name: '📺 Телевизор', cena: 25000, lvl: 5, ap: 5000, category: 'tech' },
+  { id: 'moto', name: '🏍️ Мотоцикл', cena: 60000, lvl: 7, ap: 12000, category: 'auto' },
+  { id: 'car_old', name: '🚗 Старая машина', cena: 150000, lvl: 9, ap: 30000, category: 'auto' },
+  { id: 'car_new', name: '🚙 Хорошая машина', cena: 500000, lvl: 11, ap: 100000, category: 'auto' },
+  { id: 'car_premium', name: '🚘 Премиум-тачка', cena: 1500000, lvl: 13, ap: 300000, category: 'auto' },
+  { id: 'car_sport', name: '🏎️ Спорткар', cena: 4000000, lvl: 15, ap: 800000, category: 'auto' },
+  { id: 'car_lux', name: '🚗 Люксовая тачка', cena: 8000000, lvl: 18, ap: 1600000, category: 'auto' },
+  { id: 'car_hyper', name: '🏁 Гиперкар', cena: 15000000, lvl: 21, ap: 3000000, category: 'auto' },
+  { id: 'car_super', name: '⚡ СУПЕР-КАР', cena: 25000000, lvl: 25, ap: 5000000, category: 'auto' }
+];
+
+function naytiTovar(itemId) {
+  for (var i = 0; i < tovari.length; i++) if (tovari[i].id == itemId) return tovari[i];
+  return null;
+}
+
+function naytiDom(id) {
+  for (var i = 0; i < doma.length; i++) if (doma[i].id == id) return doma[i];
+  return null;
+}
+
+function randomCena(baza) {
+  var x = 0.85 + Math.random() * 0.3;
+  return Math.floor(baza * x);
+}
+
+function minCenaTovara(item, ap) {
+  return Math.floor(item.cena * (1 + ap * 0.4) * 0.7);
+}
+
+function maxCenaTovara(item, ap) {
+  return Math.floor(item.cena * (1 + ap * 0.6) * 1.5);
+}
+
+function komissiyaZa(price) {
+  var k = Math.floor(price * 0.005);
+  if (k > 10000) k = 10000;
+  return k;
+}
+
+function energiyaZaAp(item, ap) {
+  return 1 + Math.floor(item.lvl / 3) + ap;
+}
+
+function stoimostApa(item, ap) {
+  return Math.floor(item.ap * (1 + ap * 0.4));
+}
+
+function trebOpyt(dlyaUrovnya) {
+  if (dlyaUrovnya <= 1) return 0;
+  if (dlyaUrovnya <= 20) return Math.floor(1000 * Math.pow(1.5, dlyaUrovnya - 1));
+  var base = Math.floor(1000 * Math.pow(1.5, 19));
+  var sverh = dlyaUrovnya - 20;
+  return base + Math.floor(1000 * Math.pow(3.5, sverh));
+}
+
+function formatChislo(n) {
+  n = Math.round(n);
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
