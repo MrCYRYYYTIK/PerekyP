@@ -10,6 +10,7 @@
 <body>
 
 <div class="header">
+  <div class="version">v1.1 global</div>
   <div class="clock" id="clock">🕐 День 1, 00:00</div>
   <h1 id="titulIgry" style="cursor: pointer; user-select: none;">💼 ПерекуП</h1>
   <div class="lvl-bar-wrap">
@@ -52,20 +53,6 @@
   </div>
 </div>
 
-<div class="modal-bg" id="modalRul">
-  <div class="modal">
-    <h2>🎰 Рулетка дня</h2>
-    <div class="modal-emoji">🎰</div>
-    <p>Раз в день — бесплатный спин!</p>
-    <div class="modal-hint">Ставка: 500₽</div>
-    <div class="modal-prize" id="modalRulPrize">Крути!</div>
-    <div class="modal-btns">
-      <button class="btn" onclick="zakrModal('modalRul')">Позже</button>
-      <button class="btn purple" onclick="krutitRuleku()">🎰 КРУТИТЬ</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-bg" id="modalLota">
   <div class="modal">
     <h2>🏷️ Выставить лот</h2>
@@ -82,6 +69,26 @@
     <div class="modal-btns">
       <button class="btn" onclick="zakrModal('modalLota')">Отмена</button>
       <button class="btn green" onclick="podtverdLota()">🏷️ Выставить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalObnovlenie">
+  <div class="modal">
+    <h2>🎉 Обновление 1.1!</h2>
+    <div class="modal-emoji">🎉</div>
+    <div style="text-align:left;font-size:13px;line-height:1.7;margin:12px 0;">
+      ⏱️ <b>Время ускорилось</b><br>
+      <span style="color:#aaa;font-size:11px;">1 секунда = 1 игровая минута</span><br><br>
+      📈 <b>Апгрейд стал сложнее</b><br>
+      <span style="color:#aaa;font-size:11px;">+35% к цене и +4% к шансу за уровень</span><br><br>
+      💰 <b>Цены выросли</b><br>
+      <span style="color:#aaa;font-size:11px;">Товары дороже в 2–3 раза</span><br><br>
+      🏘️ <b>Новые товары</b><br>
+      <span style="color:#aaa;font-size:11px;">🏘️ Пентхаус и 🏝️ Остров</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn gold" style="flex:1;padding:12px;font-size:14px;" onclick="zakrObnovlenie()">🎮 Играть!</button>
     </div>
   </div>
 </div>
@@ -199,4 +206,4 @@
 <script src="js/main.js"></script>
 
 </body>
-  </html>
+          </html>
