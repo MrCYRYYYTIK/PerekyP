@@ -35,6 +35,15 @@ var TEKUSHCHAYA_VERSIYA = '1.1';
 var kupilVsego = 0;
 var prodalVsego = 0;
 var jackpotVyl = false;
+var apnutoDo5 = 0;
+var vystavlenoLotov = 0;
+var sEdeno = 0;
+var sEdenoRestoran = 0;
+var pospalRaz = 0;
+var skinKingKupil = false;
+var skinDragonKupil = false;
+var bralKredit = false;
+var platilDolg = false;
 
 function tekuscheeIgrovoeMs() {
   var vIgre = (Date.now() - vremyaZahoda) * MNOZHITEL_V_IGRE;
@@ -74,6 +83,11 @@ function sobratSaveObekt() {
     jackpotVyl: jackpotVyl, tema: tema, moeDom: moeDom,
     vtoroyDom: vtoroyDom, pokazyvatModalki: pokazyvatModalki,
     posledVidenVersiya: posledVidenVersiya,
+    apnutoDo5: apnutoDo5, vystavlenoLotov: vystavlenoLotov,
+    sEdeno: sEdeno, sEdenoRestoran: sEdenoRestoran,
+    pospalRaz: pospalRaz, skinKingKupil: skinKingKupil,
+    skinDragonKupil: skinDragonKupil,
+    bralKredit: bralKredit, platilDolg: platilDolg,
     igrovoySdvig: igrovoySdvig,
     posledneeSohr: posledneeSohr
   };
@@ -129,7 +143,8 @@ function primenitSave(d) {
   if (typeof d.seriyaDney === 'number') seriyaDney = d.seriyaDney;
   if (typeof d.poslSonDen === 'number') poslSonDen = d.poslSonDen;
   if (typeof d.poslEdaMin === 'number') poslEdaMin = d.poslEdaMin;
-  if (typeof d.poslEnergMin === 'number') poslEnergMin = d.poslEnergMin;
+  if (typeof d.poslEnergMin === 'number' && d.poslEnergMin > 0) poslEnergMin = d.poslEnergMin;
+  else poslEnergMin = -9999;
   if (typeof d.activeSkin === 'string') activeSkin = d.activeSkin;
   if (Array.isArray(d.dostizheniya)) {
     for (var i = 0; i < d.dostizheniya.length; i++) {
@@ -148,6 +163,16 @@ function primenitSave(d) {
   if (d.vtoroyDom === 'mesto' || d.vtoroyDom === null) vtoroyDom = d.vtoroyDom;
   if (typeof d.pokazyvatModalki === 'boolean') pokazyvatModalki = d.pokazyvatModalki;
   if (typeof d.posledVidenVersiya === 'string') posledVidenVersiya = d.posledVidenVersiya;
+
+  if (typeof d.apnutoDo5 === 'number') apnutoDo5 = d.apnutoDo5;
+  if (typeof d.vystavlenoLotov === 'number') vystavlenoLotov = d.vystavlenoLotov;
+  if (typeof d.sEdeno === 'number') sEdeno = d.sEdeno;
+  if (typeof d.sEdenoRestoran === 'number') sEdenoRestoran = d.sEdenoRestoran;
+  if (typeof d.pospalRaz === 'number') pospalRaz = d.pospalRaz;
+  if (typeof d.skinKingKupil === 'boolean') skinKingKupil = d.skinKingKupil;
+  if (typeof d.skinDragonKupil === 'boolean') skinDragonKupil = d.skinDragonKupil;
+  if (typeof d.bralKredit === 'boolean') bralKredit = d.bralKredit;
+  if (typeof d.platilDolg === 'boolean') platilDolg = d.platilDolg;
 
   var oldSdvig = (typeof d.igrovoySdvig === 'number') ? d.igrovoySdvig : 0;
   var oldSohr = (typeof d.posledneeSohr === 'number') ? d.posledneeSohr : Date.now();
@@ -219,6 +244,15 @@ function sbrosProgressa() {
   kupilVsego = 0;
   prodalVsego = 0;
   jackpotVyl = false;
+  apnutoDo5 = 0;
+  vystavlenoLotov = 0;
+  sEdeno = 0;
+  sEdenoRestoran = 0;
+  pospalRaz = 0;
+  skinKingKupil = false;
+  skinDragonKupil = false;
+  bralKredit = false;
+  platilDolg = false;
   moeDom = 'street';
   vtoroyDom = null;
   posledVidenVersiya = '';
@@ -251,21 +285,55 @@ function proveritDostizheniya() {
     var d = dostizheniya[i];
     if (d.done) continue;
     var vypolnil = false;
+
     if (d.id == 'first_buy' && kupilVsego >= 1) vypolnil = true;
     if (d.id == 'first_sell' && prodalVsego >= 1) vypolnil = true;
     if (d.id == 'sell_10' && prodalVsego >= 10) vypolnil = true;
     if (d.id == 'sell_50' && prodalVsego >= 50) vypolnil = true;
+    if (d.id == 'sell_100' && prodalVsego >= 100) vypolnil = true;
     if (d.id == 'sell_200' && prodalVsego >= 200) vypolnil = true;
+    if (d.id == 'sell_1000' && prodalVsego >= 1000) vypolnil = true;
+    if (d.id == 'sell_5000' && prodalVsego >= 5000) vypolnil = true;
+
     if (d.id == 'lvl_5' && lvl >= 5) vypolnil = true;
     if (d.id == 'lvl_10' && lvl >= 10) vypolnil = true;
+    if (d.id == 'lvl_15' && lvl >= 15) vypolnil = true;
     if (d.id == 'lvl_20' && lvl >= 20) vypolnil = true;
+    if (d.id == 'lvl_25' && lvl >= 25) vypolnil = true;
+    if (d.id == 'lvl_30' && lvl >= 30) vypolnil = true;
+
     if (d.id == 'money_10k' && dengi >= 10000) vypolnil = true;
     if (d.id == 'money_100k' && dengi >= 100000) vypolnil = true;
     if (d.id == 'money_1m' && dengi >= 1000000) vypolnil = true;
     if (d.id == 'money_10m' && dengi >= 10000000) vypolnil = true;
-    if (d.id == 'dom_house' && moeDom == 'house') vypolnil = true;
-    if (d.id == 'dom_villa' && moeDom == 'villa') vypolnil = true;
+    if (d.id == 'money_100m' && dengi >= 100000000) vypolnil = true;
+    if (d.id == 'money_1b' && dengi >= 1000000000) vypolnil = true;
+    if (d.id == 'money_10b' && dengi >= 10000000000) vypolnil = true;
+
+    if (d.id == 'dom_flat1' && (moeDom == 'flat_1' || moeDom == 'flat_2' || moeDom == 'house' || moeDom == 'villa' || moeDom == 'mansion')) vypolnil = true;
+    if (d.id == 'dom_flat2' && (moeDom == 'flat_2' || moeDom == 'house' || moeDom == 'villa' || moeDom == 'mansion')) vypolnil = true;
+    if (d.id == 'dom_house' && (moeDom == 'house' || moeDom == 'villa' || moeDom == 'mansion')) vypolnil = true;
+    if (d.id == 'dom_villa' && (moeDom == 'villa' || moeDom == 'mansion')) vypolnil = true;
     if (d.id == 'dom_mansion' && moeDom == 'mansion') vypolnil = true;
+    if (d.id == 'dom_vtoroy' && vtoroyDom === 'mesto') vypolnil = true;
+
+    if (d.id == 'up_5' && apnutoDo5 >= 1) vypolnil = true;
+    if (d.id == 'up_10' && apnutoDo5 >= 10) vypolnil = true;
+    if (d.id == 'up_50' && apnutoDo5 >= 50) vypolnil = true;
+
+    if (d.id == 'lot_first' && vystavlenoLotov >= 1) vypolnil = true;
+    if (d.id == 'lot_100' && vystavlenoLotov >= 100) vypolnil = true;
+
+    if (d.id == 'food_shaurma' && sEdeno >= 1) vypolnil = true;
+    if (d.id == 'food_rest' && sEdenoRestoran >= 1) vypolnil = true;
+    if (d.id == 'sleep_10' && pospalRaz >= 10) vypolnil = true;
+
+    if (d.id == 'skin_king' && skinKingKupil) vypolnil = true;
+    if (d.id == 'skin_dragon' && skinDragonKupil) vypolnil = true;
+
+    if (d.id == 'bank_first' && bralKredit) vypolnil = true;
+    if (d.id == 'bank_clean' && platilDolg) vypolnil = true;
+
     if (d.id == 'roulette_win' && jackpotVyl) vypolnil = true;
 
     if (vypolnil) {
@@ -301,4 +369,4 @@ function sekDoProdazhi(l) {
   var ostalos = l.vremyaOzhidaniya - proshlo;
   if (ostalos < 0) ostalos = 0;
   return Math.ceil(ostalos / 1000);
-}
+  }
