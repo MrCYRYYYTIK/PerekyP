@@ -1,5 +1,30 @@
 var MNOZHITEL_V_IGRE = 30;
 
+var KOMISSIYA_LOTA_PROCENT = 0.005;
+var KOMISSIYA_LOTA_MAX = 10000;
+var KOMISSIYA_PRODAZHI_PROCENT = 0.10;
+var MAX_APGREYD = 5;
+var SROK_LOTA_MS = 99999999999;
+var APGREYD_CENA_BAZA = 0.4;
+var APGREYD_CENA_ZA_AP = 0.4;
+var APGREYD_CENA_MIN = 0.4;
+var APGREYD_CENA_MAX = 0.6;
+var CENA_DIAPAZON_MIN = 0.7;
+var CENA_DIAPAZON_MAX = 1.5;
+var SHANS_BAZA = 95;
+var SHANS_RAZMER = 85;
+var SHANS_BONUS_ZA_AP = 8;
+var VREMYA_PRODAZHI_MIN = 5;
+var VREMYA_PRODAZHI_MAX = 60;
+var EDA_KULDAUN_MIN = 30;
+var SON_CHASOV_NORMA = 11;
+var SON_DO_CHASA = 9;
+var SON_S = 22;
+var EDINIC_OPYT_ZA_POKUPKU = 50;
+var EDINIC_OPYT_ZA_APGREYD = 100;
+var EDINIC_OPYT_ZA_SON = 20;
+var EDINIC_OPYT_ZA_BONUS = 50;
+
 var eda = [
   { id: 'shaurma', name: '🥙 Шаурма', cena: 500, energ: 1, desc: 'Быстро и дёшево' },
   { id: 'pizza', name: '🍕 Пицца', cena: 2000, energ: 6, desc: 'Средний вариант' },
@@ -79,16 +104,16 @@ function randomCena(baza) {
 }
 
 function minCenaTovara(item, ap) {
-  return Math.floor(item.cena * (1 + ap * 0.4) * 0.7);
+  return Math.floor(item.cena * (1 + ap * APGREYD_CENA_BAZA) * CENA_DIAPAZON_MIN);
 }
 
 function maxCenaTovara(item, ap) {
-  return Math.floor(item.cena * (1 + ap * 0.6) * 1.5);
+  return Math.floor(item.cena * (1 + ap * APGREYD_CENA_MAX) * CENA_DIAPAZON_MAX);
 }
 
 function komissiyaZa(price) {
-  var k = Math.floor(price * 0.005);
-  if (k > 10000) k = 10000;
+  var k = Math.floor(price * KOMISSIYA_LOTA_PROCENT);
+  if (k > KOMISSIYA_LOTA_MAX) k = KOMISSIYA_LOTA_MAX;
   return k;
 }
 
@@ -97,7 +122,7 @@ function energiyaZaAp(item, ap) {
 }
 
 function stoimostApa(item, ap) {
-  return Math.floor(item.ap * (1 + ap * 0.4));
+  return Math.floor(item.ap * (1 + ap * APGREYD_CENA_ZA_AP));
 }
 
 function trebOpyt(dlyaUrovnya) {
@@ -111,4 +136,4 @@ function trebOpyt(dlyaUrovnya) {
 function formatChislo(n) {
   n = Math.round(n);
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    }
+   }
