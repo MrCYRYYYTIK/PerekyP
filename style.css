@@ -495,3 +495,36 @@ body.light .food-desc { color: #666; }
 }
 
 body.light .food-bonus { color: #008800; }
+
+.admin-section {
+  background: #222;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+body.light .admin-section { background: #f0f0f0; }
+
+.admin-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #66ccff;
+  margin-bottom: 8px;
+}
+
+body.light .admin-title { color: #0066cc; }
+
+.admin-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.admin-btns .btn {
+  flex: 1;
+  min-width: 90px;
+}
+
+select option { background: #222; color: white; }
+body.light select option { background: white; color: #111; }
