@@ -12,12 +12,23 @@ function toast(msg, tip) {
 function otkritModal(id) { document.getElementById(id).classList.add('show'); }
 function zakrModal(id) { document.getElementById(id).classList.remove('show'); }
 
+function proveritObnovlenie() {
+  if (posledVidenVersiya === TEKUSHCHAYA_VERSIYA) return;
+  otkritModal('modalObnovlenie');
+}
+
+function zakrObnovlenie() {
+  posledVidenVersiya = TEKUSHCHAYA_VERSIYA;
+  zakrModal('modalObnovlenie');
+  sohranit();
+  render();
+}
+
 function proveritModalki() {
   if (!pokazyvatModalki) return;
   var now = Date.now();
   var sutki = 24 * 60 * 60 * 1000;
   var bon = (now - poslBonus) >= sutki;
-  var rul = (now - poslRul) >= sutki && dengi >= 500;
   if (bon) {
     var summy = [300, 500, 800, 1200, 1800, 2500, 5000];
     var sled = seriyaDney + 1;
@@ -25,9 +36,7 @@ function proveritModalki() {
     document.getElementById('modalSeriya').textContent = sled;
     document.getElementById('modalPrize').textContent = '+' + formatChislo(summy[sled - 1]) + ' ₽';
     otkritModal('modalBonus');
-    return;
   }
-  if (rul) otkritModal('modalRul');
 }
 
 function kupit(itemId) {
@@ -334,54 +343,8 @@ function vzyatBonus() {
   dobavitOpyt(EDINIC_OPYT_ZA_BONUS);
   toast('🎁 День ' + seriyaDney + ': +' + formatChislo(bonus) + '₽!', 'gold');
   zakrModal('modalBonus');
-  setTimeout(function() {
-    if (pokazyvatModalki && (Date.now() - poslRul) >= 24*60*60*1000 && dengi >= 500) {
-      otkritModal('modalRul');
-    }
-  }, 500);
   sohranit();
   render();
-}
-
-function krutitRuleku() {
-  var now = Date.now();
-  var sutki = 24 * 60 * 60 * 1000;
-  if (now - poslRul < sutki) { zakrModal('modalRul'); return; }
-  if (dengi < 500) { toast('💸 Нужно 500₽', 'err'); return; }
-
-  dengi -= 500;
-  poslRul = now;
-
-  var prizes = [
-    { v: 0, w: 25, name: '😢 Ничего', ok: false },
-    { v: 200, w: 25, name: '💰 200₽', ok: true },
-    { v: 500, w: 20, name: '💰 500₽', ok: true },
-    { v: 1000, w: 15, name: '💰 1 000₽', ok: true },
-    { v: 3000, w: 10, name: '🔥 3 000₽', ok: true },
-    { v: 10000, w: 4, name: '💎 ДЖЕКПОТ 10 000₽', ok: true },
-    { v: -2000, w: 1, name: '💀 −2 000₽', ok: false }
-  ];
-
-  var total = 0;
-  for (var i = 0; i < prizes.length; i++) total += prizes[i].w;
-  var rnd = Math.random() * total;
-  var sum = 0;
-  var vyigral = prizes[0];
-  for (var j = 0; j < prizes.length; j++) {
-    sum += prizes[j].w;
-    if (rnd <= sum) { vyigral = prizes[j]; break; }
-  }
-
-  dengi += vyigral.v;
-  if (dengi < 0) dengi = 0;
-  if (vyigral.v == 10000) { jackpotVyl = true; proveritDostizheniya(); }
-  document.getElementById('modalRulPrize').textContent = vyigral.name;
-  setTimeout(function() {
-    zakrModal('modalRul');
-    toast('🎰 ' + vyigral.name, vyigral.ok ? 'gold' : 'err');
-    sohranit();
-    render();
-  }, 1200);
 }
 
 function vzyatKredit(summy) {
@@ -676,4 +639,4 @@ function admBystroStart() {
   activeSkin = '👤';
   toast('🔄 Откат до старта', 'ok');
   sohranit(); render();
-      }
+}
