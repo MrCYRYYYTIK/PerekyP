@@ -1,4 +1,4 @@
-var SAVE_VERSION = 2;
+var SAVE_VERSION = 3;
 var SAVE_KEY_LOCAL = 'perekup';
 var SAVE_KEY_VK = 'perekup_save_v2';
 
@@ -26,6 +26,7 @@ var poslBonus = 0;
 var seriyaDney = 0;
 var poslSonDen = 0;
 var poslEdaMin = -9999;
+var poslEnergMin = -9999;
 var pokazyvatModalki = true;
 
 var posledVidenVersiya = '';
@@ -67,7 +68,7 @@ function sobratSaveObekt() {
     energ: energ, maxEnerg: maxEnerg,
     inv: inv, loty: loty, dolg: dolg,
     poslBonus: poslBonus, seriyaDney: seriyaDney,
-    poslSonDen: poslSonDen, poslEdaMin: poslEdaMin,
+    poslSonDen: poslSonDen, poslEdaMin: poslEdaMin, poslEnergMin: poslEnergMin,
     activeSkin: activeSkin, dostizheniya: dostizheniya,
     kupilVsego: kupilVsego, prodalVsego: prodalVsego,
     jackpotVyl: jackpotVyl, tema: tema, moeDom: moeDom,
@@ -128,6 +129,7 @@ function primenitSave(d) {
   if (typeof d.seriyaDney === 'number') seriyaDney = d.seriyaDney;
   if (typeof d.poslSonDen === 'number') poslSonDen = d.poslSonDen;
   if (typeof d.poslEdaMin === 'number') poslEdaMin = d.poslEdaMin;
+  if (typeof d.poslEnergMin === 'number') poslEnergMin = d.poslEnergMin;
   if (typeof d.activeSkin === 'string') activeSkin = d.activeSkin;
   if (Array.isArray(d.dostizheniya)) {
     for (var i = 0; i < d.dostizheniya.length; i++) {
@@ -213,6 +215,7 @@ function sbrosProgressa() {
   seriyaDney = 0;
   poslSonDen = 0;
   poslEdaMin = -9999;
+  poslEnergMin = -9999;
   kupilVsego = 0;
   prodalVsego = 0;
   jackpotVyl = false;
@@ -298,4 +301,4 @@ function sekDoProdazhi(l) {
   var ostalos = l.vremyaOzhidaniya - proshlo;
   if (ostalos < 0) ostalos = 0;
   return Math.ceil(ostalos / 1000);
-      }
+}
