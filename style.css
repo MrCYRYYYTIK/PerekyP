@@ -17,12 +17,26 @@ body.light { background: #f0f0f0; color: #111; }
   border-radius: 8px;
   margin-bottom: 10px;
   text-align: center;
+  position: relative;
 }
 
 body.light .header {
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
+.version {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  font-weight: normal;
+}
+
+body.light .version { color: #999; }
 
 .clock {
   font-size: 14px;
@@ -528,35 +542,5 @@ body.light .admin-title { color: #0066cc; }
 
 select option { background: #222; color: white; }
 body.light select option { background: white; color: #111; }
-.admin-section {
-  background: #222;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  text-align: left;
-}
 
-body.light .admin-section { background: #f0f0f0; }
-
-.admin-title {
-  font-size: 13px;
-  font-weight: bold;
-  color: #66ccff;
-  margin-bottom: 8px;
-}
-
-body.light .admin-title { color: #0066cc; }
-
-.admin-btns {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.admin-btns .btn {
-  flex: 1;
-  min-width: 90px;
-}
-
-select option { background: #222; color: white; }
-body.light select option { background: white; color: #111; }
+#modalObnovlenie .modal { max-width: 340px; }
