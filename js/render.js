@@ -330,9 +330,14 @@ function renderSettings(c, v) {
   hst += '<div class="card-meta">Уровень: ' + lvl + ' · Энергия: ' + energ + '/' + maxEnerg + '</div>';
   hst += '</div>';
 
+  hst += '<div class="card">';
+  hst += '<div class="card-name" style="margin-bottom:8px">🔐 Секретный код</div>';
+  hst += '<button class="btn full" onclick="otkritParol()">🔑 Ввести код</button>';
+  hst += '</div>';
+
   hst += '<div class="card red">';
   hst += '<div class="card-name" style="margin-bottom:8px">🗑️ Сброс</div>';
   hst += '<button class="btn red full" onclick="sbrosProgressa()">Сбросить прогресс</button>';
   hst += '</div>';
   c.innerHTML = hst;
-}
+  }
