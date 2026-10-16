@@ -1,4 +1,4 @@
-var MNOZHITEL_V_IGRE = 30;
+var MNOZHITEL_V_IGRE = 60;
 
 var KOMISSIYA_LOTA_PROCENT = 0.005;
 var KOMISSIYA_LOTA_MAX = 10000;
@@ -6,14 +6,14 @@ var KOMISSIYA_PRODAZHI_PROCENT = 0.10;
 var MAX_APGREYD = 5;
 var SROK_LOTA_MS = 99999999999;
 var APGREYD_CENA_BAZA = 0.4;
-var APGREYD_CENA_ZA_AP = 0.4;
+var APGREYD_CENA_ZA_AP = 0.6;
 var APGREYD_CENA_MIN = 0.4;
-var APGREYD_CENA_MAX = 0.6;
+var APGREYD_CENA_MAX = 0.35;
 var CENA_DIAPAZON_MIN = 0.7;
 var CENA_DIAPAZON_MAX = 1.5;
 var SHANS_BAZA = 95;
 var SHANS_RAZMER = 85;
-var SHANS_BONUS_ZA_AP = 8;
+var SHANS_BONUS_ZA_AP = 4;
 var VREMYA_PRODAZHI_MIN = 5;
 var VREMYA_PRODAZHI_MAX = 60;
 var EDA_KULDAUN_MIN = 30;
@@ -72,20 +72,20 @@ var skiny = [
 ];
 
 var tovari = [
-  { id: 'phone', name: '📱 Старый телефон', cena: 300, lvl: 1, ap: 100, category: 'tech' },
-  { id: 'sneak', name: '👟 Кроссовки', cena: 1000, lvl: 1, ap: 300, category: 'clothes' },
-  { id: 'bike', name: '🚲 Велосипед', cena: 3000, lvl: 2, ap: 700, category: 'tech' },
-  { id: 'laptop', name: '💻 Ноутбук', cena: 8000, lvl: 3, ap: 1800, category: 'tech' },
-  { id: 'guitar', name: '🎸 Гитара', cena: 15000, lvl: 4, ap: 3000, category: 'music' },
-  { id: 'tv', name: '📺 Телевизор', cena: 25000, lvl: 5, ap: 5000, category: 'tech' },
-  { id: 'moto', name: '🏍️ Мотоцикл', cena: 60000, lvl: 7, ap: 12000, category: 'auto' },
-  { id: 'car_old', name: '🚗 Старая машина', cena: 150000, lvl: 9, ap: 30000, category: 'auto' },
-  { id: 'car_new', name: '🚙 Хорошая машина', cena: 500000, lvl: 11, ap: 100000, category: 'auto' },
-  { id: 'car_premium', name: '🚘 Премиум-тачка', cena: 1500000, lvl: 13, ap: 300000, category: 'auto' },
-  { id: 'car_sport', name: '🏎️ Спорткар', cena: 4000000, lvl: 15, ap: 800000, category: 'auto' },
-  { id: 'car_lux', name: '🚗 Люксовая тачка', cena: 8000000, lvl: 18, ap: 1600000, category: 'auto' },
-  { id: 'car_hyper', name: '🏁 Гиперкар', cena: 15000000, lvl: 21, ap: 3000000, category: 'auto' },
-  { id: 'car_super', name: '⚡ СУПЕР-КАР', cena: 25000000, lvl: 25, ap: 5000000, category: 'auto' }
+  { id: 'phone', name: '📱 Старый телефон', cena: 500, lvl: 1, ap: 200, category: 'tech' },
+  { id: 'sneak', name: '👟 Кроссовки', cena: 2000, lvl: 1, ap: 500, category: 'clothes' },
+  { id: 'bike', name: '🚲 Велосипед', cena: 8000, lvl: 2, ap: 2000, category: 'tech' },
+  { id: 'laptop', name: '💻 Ноутбук', cena: 25000, lvl: 3, ap: 6000, category: 'tech' },
+  { id: 'guitar', name: '🎸 Гитара', cena: 50000, lvl: 4, ap: 12000, category: 'music' },
+  { id: 'tv', name: '📺 Телевизор', cena: 80000, lvl: 5, ap: 20000, category: 'tech' },
+  { id: 'moto', name: '🏍️ Мотоцикл', cena: 200000, lvl: 7, ap: 50000, category: 'auto' },
+  { id: 'car_old', name: '🚗 Старая машина', cena: 500000, lvl: 9, ap: 120000, category: 'auto' },
+  { id: 'car_new', name: '🚙 Хорошая машина', cena: 1500000, lvl: 11, ap: 350000, category: 'auto' },
+  { id: 'car_premium', name: '🚘 Премиум-тачка', cena: 4000000, lvl: 13, ap: 1000000, category: 'auto' },
+  { id: 'car_sport', name: '🏎️ Спорткар', cena: 12000000, lvl: 15, ap: 3000000, category: 'auto' },
+  { id: 'penthouse', name: '🏘️ Пентхаус', cena: 25000000, lvl: 18, ap: 6000000, category: 'realty' },
+  { id: 'island', name: '🏝️ Остров', cena: 50000000, lvl: 21, ap: 12000000, category: 'realty' },
+  { id: 'car_super', name: '⚡ СУПЕР-КАР', cena: 100000000, lvl: 25, ap: 25000000, category: 'auto' }
 ];
 
 function naytiTovar(itemId) {
