@@ -39,7 +39,8 @@ function posleZagruzki() {
   obnovitChasy();
   render();
   zapustitTaimery();
-  setTimeout(proveritModalki, 600);
+  setTimeout(proveritObnovlenie, 600);
+  setTimeout(proveritModalki, 1500);
 
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
