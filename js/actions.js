@@ -386,16 +386,30 @@ var vremyaKlikov = 0;
 
 function obrabotatKlikTitul() {
   var now = Date.now();
-  if (now - vremyaKlikov > 2000) klikovPoTitulu = 0;
+  if (now - vremyaKlikov > 3000) klikovPoTitulu = 0;
   klikovPoTitulu++;
   vremyaKlikov = now;
-  
+
+  var t = document.getElementById('toast');
+  if (t && klikovPoTitulu > 1 && klikovPoTitulu < 5) {
+    t.textContent = 'Ещё ' + (5 - klikovPoTitulu) + ' тапов...';
+    t.className = 'toast show';
+    t.style.background = '#444';
+    setTimeout(function() { t.className = 'toast'; }, 800);
+  }
+
   if (klikovPoTitulu >= 5) {
     klikovPoTitulu = 0;
     otkritModal('modalParol');
     document.getElementById('parolInput').value = '';
     document.getElementById('parolErr').style.display = 'none';
   }
+}
+
+function otkritParol() {
+  otkritModal('modalParol');
+  document.getElementById('parolInput').value = '';
+  document.getElementById('parolErr').style.display = 'none';
 }
 
 function proveritParol() {
@@ -484,7 +498,7 @@ function admSetVremya() {
   var c = parseInt(document.getElementById('admChas').value);
   if (isNaN(d) || d < 1) return toast('❌ Неверный день', 'err');
   if (isNaN(c) || c < 0 || c > 23) return toast('❌ Час 0-23', 'err');
-  
+
   var targetMs = ((d - 1) * 1440 + c * 60) * 60 * 1000;
   igrovoySdvig = targetMs;
   vremyaZahoda = Date.now();
