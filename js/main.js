@@ -48,3 +48,10 @@ zagruzit();
 maxEnerg = 20 + lvl * 2;
 primenitTemu();
 render();
+
+setTimeout(function() {
+  var titul = document.getElementById('titulIgry');
+  if (titul) {
+    titul.addEventListener('click', obrabotatKlikTitul);
+  }
+}, 100);
