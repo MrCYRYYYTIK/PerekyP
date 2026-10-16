@@ -1,6 +1,11 @@
+var SAVE_VERSION = 2;
+var SAVE_KEY_LOCAL = 'perekup';
+var SAVE_KEY_VK = 'perekup_save_v2';
+
 var igrovoySdvig = 0;
 var vremyaZahoda = Date.now();
 var posledneeSohr = Date.now();
+var sohranenieVProtsesse = false;
 
 var user = null;
 var dengi = 1000;
@@ -53,11 +58,9 @@ function primenitTemu() {
   else document.body.classList.remove('light');
 }
 
-function sohranit() {
-  igrovoySdvig = tekuscheeIgrovoeMs();
-  vremyaZahoda = Date.now();
-  posledneeSohr = Date.now();
-  localStorage.setItem('perekup', JSON.stringify({
+function sobratSaveObekt() {
+  return {
+    version: SAVE_VERSION,
     dengi: dengi, lvl: lvl, opyt: opyt,
     energ: energ, maxEnerg: maxEnerg,
     inv: inv, loty: loty, dolg: dolg,
@@ -69,59 +72,118 @@ function sohranit() {
     vtoroyDom: vtoroyDom, pokazyvatModalki: pokazyvatModalki,
     igrovoySdvig: igrovoySdvig,
     posledneeSohr: posledneeSohr
-  }));
+  };
+}
+
+function sohranit() {
+  if (sohranenieVProtsesse) return;
+  sohranenieVProtsesse = true;
+
+  igrovoySdvig = tekuscheeIgrovoeMs();
+  vremyaZahoda = Date.now();
+  posledneeSohr = Date.now();
+
+  var data = sobratSaveObekt();
+  var json = JSON.stringify(data);
+
+  try {
+    localStorage.setItem(SAVE_KEY_LOCAL, json);
+  } catch(e) {}
+
+  if (typeof vkBridge !== 'undefined' && vkBridge && vkBridge.send) {
+    try {
+      vkBridge.send('VKWebAppStorageSet', {
+        key: SAVE_KEY_VK,
+        value: json
+      }).catch(function() {});
+    } catch(e) {}
+  }
+
+  sohranenieVProtsesse = false;
+}
+
+function primenitSave(d) {
+  if (!d || typeof d !== 'object') return;
+
+  if (typeof d.dengi === 'number' && d.dengi >= 0 && isFinite(d.dengi)) dengi = d.dengi;
+  if (typeof d.lvl === 'number' && d.lvl >= 1 && d.lvl <= 1000) lvl = d.lvl;
+  if (typeof d.opyt === 'number' && d.opyt >= 0) opyt = d.opyt;
+  if (typeof d.energ === 'number' && d.energ >= 0) energ = d.energ;
+  if (typeof d.maxEnerg === 'number' && d.maxEnerg >= 20) maxEnerg = d.maxEnerg;
+  if (Array.isArray(d.inv)) inv = d.inv.filter(function(x) { return x && x.itemId && naytiTovar(x.itemId); });
+  if (Array.isArray(d.loty)) {
+    loty = d.loty.filter(function(x) { return x && x.itemId && naytiTovar(x.itemId); });
+    for (var li = 0; li < loty.length; li++) {
+      if (!loty[li].srokDo) loty[li].srokDo = Date.now() + SROK_LOTA_MS;
+      if (!loty[li].vremyaStart) loty[li].vremyaStart = Date.now();
+      if (typeof loty[li].shansProdagy !== 'number') loty[li].shansProdagy = 50;
+      if (typeof loty[li].vremyaOzhidaniya !== 'number') loty[li].vremyaOzhidaniya = 5000;
+    }
+  }
+  if (typeof d.dolg === 'number' && d.dolg >= 0) dolg = d.dolg;
+  if (typeof d.poslBonus === 'number') poslBonus = d.poslBonus;
+  if (typeof d.seriyaDney === 'number') seriyaDney = d.seriyaDney;
+  if (typeof d.poslRul === 'number') poslRul = d.poslRul;
+  if (typeof d.poslSonDen === 'number') poslSonDen = d.poslSonDen;
+  if (typeof d.poslEdaMin === 'number') poslEdaMin = d.poslEdaMin;
+  if (typeof d.activeSkin === 'string') activeSkin = d.activeSkin;
+  if (Array.isArray(d.dostizheniya)) {
+    for (var i = 0; i < d.dostizheniya.length; i++) {
+      for (var j = 0; j < dostizheniya.length; j++) {
+        if (dostizheniya[j].id == d.dostizheniya[i].id) {
+          dostizheniya[j].done = !!d.dostizheniya[i].done;
+        }
+      }
+    }
+  }
+  if (typeof d.kupilVsego === 'number' && d.kupilVsego >= 0) kupilVsego = d.kupilVsego;
+  if (typeof d.prodalVsego === 'number' && d.prodalVsego >= 0) prodalVsego = d.prodalVsego;
+  if (typeof d.jackpotVyl === 'boolean') jackpotVyl = d.jackpotVyl;
+  if (d.tema === 'dark' || d.tema === 'light') tema = d.tema;
+  if (typeof d.moeDom === 'string' && naytiDom(d.moeDom)) moeDom = d.moeDom;
+  if (d.vtoroyDom === 'mesto' || d.vtoroyDom === null) vtoroyDom = d.vtoroyDom;
+  if (typeof d.pokazyvatModalki === 'boolean') pokazyvatModalki = d.pokazyvatModalki;
+
+  var oldSdvig = (typeof d.igrovoySdvig === 'number') ? d.igrovoySdvig : 0;
+  var oldSohr = (typeof d.posledneeSohr === 'number') ? d.posledneeSohr : Date.now();
+  var proshloOffline = Date.now() - oldSohr;
+  if (proshloOffline < 0) proshloOffline = 0;
+  if (proshloOffline > 24 * 60 * 60 * 1000) proshloOffline = 24 * 60 * 60 * 1000;
+
+  igrovoySdvig = oldSdvig + proshloOffline;
+
+  if (energ > maxEnerg) energ = maxEnerg;
 }
 
 function zagruzit() {
-  var s = localStorage.getItem('perekup');
-  if (s) {
-    try {
+  var zagruzheno = false;
+
+  try {
+    var s = localStorage.getItem(SAVE_KEY_LOCAL);
+    if (s) {
       var d = JSON.parse(s);
-      if (d.dengi != null) dengi = d.dengi;
-      if (d.lvl) lvl = d.lvl;
-      if (d.opyt != null) opyt = d.opyt;
-      if (d.energ != null) energ = d.energ;
-      if (d.maxEnerg) maxEnerg = d.maxEnerg;
-      if (d.inv) inv = d.inv;
-      if (d.loty) {
-        loty = d.loty;
-        for (var li = 0; li < loty.length; li++) {
-          if (!loty[li].srokDo) loty[li].srokDo = Date.now() + 99999999999;
-        }
-      }
-      if (d.dolg) dolg = d.dolg;
-      if (d.poslBonus) poslBonus = d.poslBonus;
-      if (d.seriyaDney) seriyaDney = d.seriyaDney;
-      if (d.poslRul) poslRul = d.poslRul;
-      if (d.poslSonDen != null) poslSonDen = d.poslSonDen;
-      if (d.poslEdaMin != null) poslEdaMin = d.poslEdaMin;
-      if (d.activeSkin) activeSkin = d.activeSkin;
-      if (d.dostizheniya) {
-        for (var i = 0; i < d.dostizheniya.length; i++) {
-          for (var j = 0; j < dostizheniya.length; j++) {
-            if (dostizheniya[j].id == d.dostizheniya[i].id) {
-              dostizheniya[j].done = d.dostizheniya[i].done;
-            }
+      primenitSave(d);
+      zagruzheno = true;
+    }
+  } catch(e) {}
+
+  if (!zagruzheno && typeof vkBridge !== 'undefined' && vkBridge && vkBridge.send) {
+    try {
+      vkBridge.send('VKWebAppStorageGet', { keys: [SAVE_KEY_VK] })
+        .then(function(res) {
+          if (res && res.keys && res.keys[0] && res.keys[0].value) {
+            try {
+              var d = JSON.parse(res.keys[0].value);
+              primenitSave(d);
+              sohranit();
+              render();
+            } catch(e) {}
           }
-        }
-      }
-      if (d.kupilVsego) kupilVsego = d.kupilVsego;
-      if (d.prodalVsego) prodalVsego = d.prodalVsego;
-      if (d.jackpotVyl) jackpotVyl = d.jackpotVyl;
-      if (d.tema) tema = d.tema;
-      if (d.moeDom) moeDom = d.moeDom;
-      if (d.vtoroyDom != null) vtoroyDom = d.vtoroyDom;
-      if (d.pokazyvatModalki != null) pokazyvatModalki = d.pokazyvatModalki;
-
-      var oldSdvig = d.igrovoySdvig || 0;
-      var oldSohr = d.posledneeSohr || Date.now();
-      var proshloOffline = Date.now() - oldSohr;
-      if (proshloOffline < 0) proshloOffline = 0;
-      if (proshloOffline > 24 * 60 * 60 * 1000) proshloOffline = 24 * 60 * 60 * 1000;
-
-      igrovoySdvig = oldSdvig + proshloOffline;
+        })
+        .catch(function() {});
     } catch(e) {}
   }
+
   vremyaZahoda = Date.now();
   posledneeSohr = Date.now();
 }
@@ -129,7 +191,9 @@ function zagruzit() {
 function sbrosProgressa() {
   if (!confirm('⚠️ ТОЧНО сбросить прогресс?')) return;
   if (!confirm('⚠️ Последнее предупреждение!')) return;
-  localStorage.removeItem('perekup');
+
+  try { localStorage.removeItem(SAVE_KEY_LOCAL); } catch(e) {}
+
   igrovoySdvig = 0;
   vremyaZahoda = Date.now();
   posledneeSohr = Date.now();
@@ -153,15 +217,17 @@ function sbrosProgressa() {
   moeDom = 'street';
   vtoroyDom = null;
   for (var i = 0; i < dostizheniya.length; i++) dostizheniya[i].done = false;
+
   toast('🗑️ Прогресс сброшен', 'ok');
   sohranit();
   render();
 }
 
 function dobavitOpyt(skolko) {
+  if (typeof skolko !== 'number' || skolko <= 0) return;
   opyt += skolko;
   var povysheniya = 0;
-  while (opyt >= trebOpyt(lvl + 1)) {
+  while (opyt >= trebOpyt(lvl + 1) && lvl < 100) {
     lvl++;
     povysheniya++;
     maxEnerg = 20 + lvl * 2;
@@ -214,11 +280,11 @@ function rasschitatShansICena(l, item) {
   var otklonenie = (l.moyaCena - minC) / diap;
   if (otklonenie < 0) otklonenie = 0;
   if (otklonenie > 1) otklonenie = 1;
-  var bonusAp = l.ap * 8;
-  var shans = 95 - otklonenie * (85 - bonusAp);
+  var bonusAp = l.ap * SHANS_BONUS_ZA_AP;
+  var shans = SHANS_BAZA - otklonenie * (SHANS_RAZMER - bonusAp);
   if (shans < 5) shans = 5;
   if (shans > 95) shans = 95;
-  var vremya = 5 + otklonenie * 55;
+  var vremya = VREMYA_PRODAZHI_MIN + otklonenie * (VREMYA_PRODAZHI_MAX - VREMYA_PRODAZHI_MIN);
   l.shansProdagy = Math.round(shans);
   l.vremyaOzhidaniya = Math.round(vremya * 1000);
   l.vremyaStart = Date.now();
@@ -229,4 +295,4 @@ function sekDoProdazhi(l) {
   var ostalos = l.vremyaOzhidaniya - proshlo;
   if (ostalos < 0) ostalos = 0;
   return Math.ceil(ostalos / 1000);
-}
+                                      }
