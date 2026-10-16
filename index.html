@@ -66,6 +66,26 @@
   </div>
 </div>
 
+<div class="modal-bg" id="modalLota">
+  <div class="modal">
+    <h2>🏷️ Выставить лот</h2>
+    <div class="modal-emoji" style="font-size:40px;">💰</div>
+    <p style="font-weight:bold;margin-bottom:10px;" id="lotaItemName">Товар</p>
+    <div class="modal-hint">
+      Мин: <b id="lotaMin">0</b>₽ · Макс: <b id="lotaMax">0</b>₽
+    </div>
+    <input type="number" id="lotaCena" placeholder="Твоя цена" style="width:100%;padding:12px;border-radius:8px;border:2px solid #66ccff;background:#222;color:white;font-size:16px;text-align:center;margin-top:10px;">
+    <div class="modal-hint" style="margin-top:6px;">
+      Комиссия: до <b id="lotaKomissiya">0</b>₽
+    </div>
+    <div id="lotaOshibka" style="color:#ff6666;font-size:12px;margin-top:6px;display:none;">Ошибка</div>
+    <div class="modal-btns">
+      <button class="btn" onclick="zakrModal('modalLota')">Отмена</button>
+      <button class="btn green" onclick="podtverdLota()">🏷️ Выставить</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modalParol">
   <div class="modal">
     <h2>🔐 Секретный код</h2>
@@ -83,7 +103,7 @@
   <div class="modal" style="max-height:85vh;overflow-y:auto;">
     <h2>🛠️ Админ-панель</h2>
     <div class="modal-emoji" style="font-size:40px;">🛠️</div>
-    
+
     <div class="admin-section">
       <div class="admin-title">💰 Деньги</div>
       <input type="number" id="admDengi" placeholder="Сумма" style="width:100%;padding:10px;border-radius:6px;border:2px solid #555;background:#222;color:white;margin-bottom:6px;">
@@ -93,32 +113,32 @@
         <button class="btn small" onclick="admSetDengi()">= Установить</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
       <div class="admin-title">⭐ Уровень и опыт</div>
       <input type="number" id="admLvl" placeholder="Уровень / Опыт" style="width:100%;padding:10px;border-radius:6px;border:2px solid #555;background:#222;color:white;margin-bottom:6px;">
       <div class="admin-btns">
-        <button class="btn small" onclick="admSetLvl()">= Установить уровень</button>
+        <button class="btn small" onclick="admSetLvl()">= Уровень</button>
         <button class="btn small" onclick="admAddOpyt()">➕ Опыт</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
       <div class="admin-title">⚡ Энергия</div>
-      <button class="btn small green full" onclick="admMaxEnerg()">🔋 Восстановить до максимума</button>
+      <button class="btn small green full" onclick="admMaxEnerg()">🔋 Восстановить</button>
     </div>
-    
+
     <div class="admin-section">
-      <div class="admin-title">🕐 Время (для видео)</div>
+      <div class="admin-title">🕐 Время</div>
       <input type="number" id="admDen" placeholder="День" style="width:48%;padding:10px;border-radius:6px;border:2px solid #555;background:#222;color:white;margin-bottom:6px;">
       <input type="number" id="admChas" placeholder="Час 0-23" style="width:48%;padding:10px;border-radius:6px;border:2px solid #555;background:#222;color:white;margin-bottom:6px;margin-left:4%;">
       <div class="admin-btns">
         <button class="btn small full" onclick="admSetVremya()">🕐 Установить</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
-      <div class="admin-title">📦 Товары в сумку</div>
+      <div class="admin-title">📦 Товары</div>
       <select id="admTovar" style="width:100%;padding:10px;border-radius:6px;border:2px solid #555;background:#222;color:white;margin-bottom:6px;"></select>
       <div class="admin-btns">
         <button class="btn small green" onclick="admVydatTovar()">📦 Выдать</button>
@@ -126,7 +146,7 @@
         <button class="btn small red" onclick="admOchistitSumku()">🗑️ Очистить</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
       <div class="admin-title">🏠 Жильё</div>
       <select id="admDom" style="width:100%;padding:10px;border-radius:6px;border:2px solid #555;background:#222;color:white;margin-bottom:6px;"></select>
@@ -136,36 +156,36 @@
         <button class="btn small purple" onclick="admVtoroyDom()">🏗️ 2-й дом</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
-      <div class="admin-title">🏆 Достижения и скины</div>
+      <div class="admin-title">🏆 Награды</div>
       <div class="admin-btns">
         <button class="btn small gold" onclick="admVseDostizheniya()">🏅 Все достижения</button>
         <button class="btn small gold" onclick="admVseSkiny()">💼 Скин Дракон</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
       <div class="admin-title">🏷️ Лоты</div>
       <div class="admin-btns">
-        <button class="btn small green" onclick="admProdatVseLoty()">💰 Продать все</button>
+        <button class="btn small green" onclick="admProdatVseLoty()">💰 Продать</button>
         <button class="btn small red" onclick="admOchistitLoty()">🗑️ Удалить</button>
       </div>
     </div>
-    
+
     <div class="admin-section">
       <div class="admin-title">💳 Долг</div>
-      <button class="btn small green full" onclick="admObolg()">✅ Обнулить долг</button>
+      <button class="btn small green full" onclick="admObolg()">✅ Обнулить</button>
     </div>
-    
+
     <div class="admin-section">
-      <div class="admin-title">🚀 Быстрые действия</div>
+      <div class="admin-title">🚀 Быстро</div>
       <div class="admin-btns">
         <button class="btn small gold" onclick="admBystroBogat()">💎 +10млн + Ур.50</button>
-        <button class="btn small" onclick="admBystroStart()">🔄 Откат 1000₽</button>
+        <button class="btn small" onclick="admBystroStart()">🔄 Откат</button>
       </div>
     </div>
-    
+
     <div class="modal-btns">
       <button class="btn" onclick="zakrModal('modalAdmin')">Закрыть</button>
     </div>
@@ -179,4 +199,4 @@
 <script src="js/main.js"></script>
 
 </body>
-</html>
+  </html>
