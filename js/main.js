@@ -44,14 +44,34 @@ for (var i = 0; i < vseTaby.length; i++) {
   };
 }
 
+function podkluchitKlik() {
+  var titul = document.getElementById('titulIgry');
+  if (titul && !titul.dataset.klikPodkl) {
+    titul.dataset.klikPodkl = '1';
+    titul.addEventListener('click', obrabotatKlikTitul);
+    titul.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      obrabotatKlikTitul();
+    });
+  }
+  var chasy = document.getElementById('clock');
+  if (chasy && !chasy.dataset.klikPodkl) {
+    chasy.dataset.klikPodkl = '1';
+    chasy.style.cursor = 'pointer';
+    chasy.addEventListener('click', obrabotatKlikTitul);
+    chasy.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      obrabotatKlikTitul();
+    });
+  }
+}
+
 zagruzit();
 maxEnerg = 20 + lvl * 2;
 primenitTemu();
 render();
 
-setTimeout(function() {
-  var titul = document.getElementById('titulIgry');
-  if (titul) {
-    titul.addEventListener('click', obrabotatKlikTitul);
-  }
-}, 100);
+podkluchitKlik();
+setTimeout(podkluchitKlik, 300);
+setTimeout(podkluchitKlik, 1000);
+setTimeout(podkluchitKlik, 3000);
