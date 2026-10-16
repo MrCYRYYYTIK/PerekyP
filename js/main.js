@@ -1,3 +1,5 @@
+var timerChasy, timerSave, timerRender, timerDostizh;
+
 function vkDostupen() {
   return typeof vkBridge !== 'undefined' && vkBridge && typeof vkBridge.send === 'function';
 }
@@ -12,15 +14,31 @@ if (vkDostupen()) {
   posleZagruzki();
 }
 
+function zapustitTaimery() {
+  if (timerChasy) clearInterval(timerChasy);
+  if (timerSave) clearInterval(timerSave);
+  if (timerRender) clearInterval(timerRender);
+  if (timerDostizh) clearInterval(timerDostizh);
+
+  timerChasy = setInterval(obnovitChasy, 1000);
+  timerSave = setInterval(function() { sohranit(); }, 5000);
+  timerRender = setInterval(function() {
+    if (tab == 'lots' || tab == 'market' || tab == 'dom' || tab == 'food') render();
+  }, 1500);
+  timerDostizh = setInterval(function() { proveritDostizheniya(); }, 5000);
+}
+
+function ostanovitTaimery() {
+  if (timerChasy) clearInterval(timerChasy);
+  if (timerSave) clearInterval(timerSave);
+  if (timerRender) clearInterval(timerRender);
+  if (timerDostizh) clearInterval(timerDostizh);
+}
+
 function posleZagruzki() {
   obnovitChasy();
   render();
-  setInterval(obnovitChasy, 1000);
-  setInterval(function() { sohranit(); }, 5000);
-  setInterval(function() {
-    if (tab == 'lots' || tab == 'market' || tab == 'dom' || tab == 'food') render();
-  }, 1500);
-  setInterval(function() { proveritDostizheniya(); }, 5000);
+  zapustitTaimery();
   setTimeout(proveritModalki, 600);
 
   document.addEventListener('visibilitychange', function() {
@@ -28,9 +46,18 @@ function posleZagruzki() {
       igrovoySdvig = tekuscheeIgrovoeMs();
       vremyaZahoda = Date.now();
       sohranit();
+      ostanovitTaimery();
     } else {
       vremyaZahoda = Date.now();
+      zapustitTaimery();
+      render();
     }
+  });
+
+  window.addEventListener('beforeunload', function() {
+    igrovoySdvig = tekuscheeIgrovoeMs();
+    vremyaZahoda = Date.now();
+    sohranit();
   });
 }
 
