@@ -243,7 +243,6 @@ var MNOZHITEL_V_IGRE = 30;
 var igrovoySdvig = 0;
 var vremyaZahoda = Date.now();
 var posledneeSohr = Date.now();
-var vsetakiDen = 1;
 
 var user = null;
 var dengi = 1000;
@@ -266,8 +265,6 @@ var poslRul = 0;
 var poslSonDen = 0;
 var poslEdaMin = -9999;
 var pokazyvatModalki = true;
-
-var SROK_LOTA_MS = 86400000;
 
 var eda = [
   { id: 'shaurma', name: '🥙 Шаурма', cena: 500, energ: 1, desc: 'Быстро и дёшево' },
@@ -379,22 +376,6 @@ function posleZagruzki() {
     if (tab == 'lots' || tab == 'market' || tab == 'dom' || tab == 'food') render();
   }, 1500);
   setInterval(function() { proveritDostizheniya(); }, 5000);
-  setInterval(function() {
-    for (var i = loty.length - 1; i >= 0; i--) {
-      if (Date.now() > loty[i].srokDo) {
-        var l = loty[i];
-        inv.push({
-          uid: Date.now() + Math.random(),
-          itemId: l.itemId,
-          kupCena: l.kupCena,
-          ap: l.ap
-        });
-        loty.splice(i, 1);
-        toast('⏰ Лот истёк, товар вернулся', 'err');
-        sohranit();
-      }
-    }
-  }, 30000);
   setTimeout(proveritModalki, 600);
 
   document.addEventListener('visibilitychange', function() {
@@ -505,7 +486,12 @@ function zagruzit() {
       if (d.energ != null) energ = d.energ;
       if (d.maxEnerg) maxEnerg = d.maxEnerg;
       if (d.inv) inv = d.inv;
-      if (d.loty) loty = d.loty;
+      if (d.loty) {
+        loty = d.loty;
+        for (var li = 0; li < loty.length; li++) {
+          if (!loty[li].srokDo) loty[li].srokDo = Date.now() + 99999999999;
+        }
+      }
       if (d.dolg) dolg = d.dolg;
       if (d.poslBonus) poslBonus = d.poslBonus;
       if (d.seriyaDney) seriyaDney = d.seriyaDney;
@@ -712,8 +698,7 @@ function vystavitLot(uid) {
     kupCena: moy.kupCena,
     ap: moy.ap,
     moyaCena: moyaCena,
-    vremyaStart: Date.now(),
-    srokDo: Date.now() + SROK_LOTA_MS
+    vremyaStart: Date.now()
   };
   rasschitatShansICena(lot, item);
   loty.push(lot);
@@ -745,7 +730,6 @@ function prodatLot(uid) {
   if (idx == -1) return;
   var l = loty[idx];
   if (energ < 1) { toast('⚡ Нет энергии', 'err'); return; }
-  if (Date.now() > l.srokDo) { toast('⏰ Лот истёк!', 'err'); zabratLot(uid); return; }
 
   var shans = l.shansProdagy || 50;
   var prodano = Math.random() * 100 < shans;
@@ -800,22 +784,29 @@ function sest() {
   if (poslSonDen === v.den) { toast('😴 Ты уже спал сегодня', 'err'); return; }
   if (v.chas >= 9 && v.chas < 22) { toast('😴 Спать можно только ночью (22:00–09:00)', 'err'); return; }
 
-  var chasSnа;
-  if (v.chas >= 22) chasSnа = (24 - v.chas) + 9;
-  else chasSnа = 9 - v.chas;
-  if (chasSnа > 11) chasSnа = 11;
+  var chasSpal;
+  if (v.chas >= 22) chasSpal = (24 - v.chas) + 9;
+  else chasSpal = 9 - v.chas;
+  if (chasSpal > 11) chasSpal = 11;
 
   var dom = naytiDom(moeDom);
-  var dobavka = Math.floor(dom.son * (chasSnа / 11));
+  var dobavka = Math.floor(dom.son * (chasSpal / 11));
   if (dobavka < 1) dobavka = 1;
 
   energ = energ + dobavka;
   if (energ > maxEnerg) energ = maxEnerg;
-  poslSonDen = v.den;
 
-  toast('😴 Спал ' + chasSnа + ' ч. +' + dobavka + ' ⚡', 'ok');
+  var minSpal = chasSpal * 60;
+  igrovoySdvig += minSpal * 60 * 1000;
+  vremyaZahoda = Date.now();
+
+  var novoeVremya = vremyaIgry();
+  poslSonDen = novoeVremya.den;
+
+  toast('😴 Спал ' + chasSpal + ' ч. +' + dobavka + ' ⚡', 'ok');
   sohranit();
   render();
+  obnovitChasy();
 }
 
 function kupitEdu(id) {
@@ -1018,14 +1009,6 @@ function sekDoProdazhi(l) {
   return Math.ceil(ostalos / 1000);
 }
 
-function ostatokLota(l) {
-  var ostalos = l.srokDo - Date.now();
-  if (ostalos < 0) ostalos = 0;
-  var chas = Math.floor(ostalos / 3600000);
-  var min = Math.floor((ostalos % 3600000) / 60000);
-  return chas + 'ч ' + min + 'мин';
-}
-
 function obnovitLvlBar() {
   var bar = document.getElementById('lvlBar');
   var info = document.getElementById('lvlInfo');
@@ -1142,23 +1125,19 @@ function render() {
         if (progress < 0) progress = 0;
         if (progress > 100) progress = 100;
       }
-      var istek = Date.now() > l.srokDo;
-      hl += '<div class="card' + (istek ? ' red' : '') + '">';
+      hl += '<div class="card">';
       hl += '<div class="card-row">';
       hl += '<div class="card-info">';
       hl += '<div class="card-name">' + t2.name + (l.ap > 0 ? ' +' + l.ap : '') + '</div>';
       hl += '<div class="card-meta">Куплено: ' + formatChislo(l.kupCena) + '₽</div>';
-      hl += '<div class="card-meta">Срок: ' + ostatokLota(l) + '</div>';
-      if (istek) hl += '<div class="lot-timer">⏰ Истёк</div>';
-      else if (gotov) hl += '<div class="lot-chance">✅ Шанс ' + shans + '%</div>';
-      else hl += '<div class="lot-timer">⏳ ' + sek + ' сек · ' + shans + '%</div>';
+      if (gotov) hl += '<div class="lot-chance">✅ Шанс ' + shans + '%</div>';
+      else hl += '<div class="lot-timer">⏳ ' + sek + ' сек · шанс ' + shans + '%</div>';
       hl += '</div>';
       hl += '<div class="card-price">' + formatChislo(l.moyaCena) + ' ₽</div>';
       hl += '</div>';
       hl += '<div class="lot-bar"><div class="lot-bar-in" style="width:' + progress + '%"></div></div>';
       hl += '<div class="card-row" style="margin-top:8px">';
-      if (istek) hl += '<button class="btn small" disabled>⏰</button>';
-      else if (gotov) hl += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать</button>';
+      if (gotov) hl += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать</button>';
       else hl += '<button class="btn small" disabled>⏳ ' + sek + 'с</button>';
       hl += '<button class="btn small red" onclick="zabratLot(' + l.uid + ')">↩️ Снять</button>';
       hl += '</div></div>';
@@ -1350,6 +1329,7 @@ for (var i = 0; i < vseTaby.length; i++) {
 
 zagruzit();
 maxEnerg = 20 + lvl * 2;
+primenitTema = primenitTemu;
 primenitTemu();
 render();
 </script>
