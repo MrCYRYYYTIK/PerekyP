@@ -1,4 +1,4 @@
-var timerChasy, timerSave, timerRender, timerDostizh;
+var timerChasy, timerSave, timerRender, timerDostizh, timerEnerg;
 
 function vkDostupen() {
   return typeof vkBridge !== 'undefined' && vkBridge && typeof vkBridge.send === 'function';
@@ -14,11 +14,26 @@ if (vkDostupen()) {
   posleZagruzki();
 }
 
+function proveritEnergiyu() {
+  if (energ >= maxEnerg) return;
+  var v = vremyaIgry();
+  var tekMin = v.den * 1440 + v.chas * 60 + v.min;
+  if (poslEnergMin < 0) { poslEnergMin = tekMin; return; }
+  if (tekMin - poslEnergMin >= 30) {
+    var skolko = Math.floor((tekMin - poslEnergMin) / 30);
+    energ += skolko;
+    if (energ > maxEnerg) energ = maxEnerg;
+    poslEnergMin = tekMin;
+    render();
+  }
+}
+
 function zapustitTaimery() {
   if (timerChasy) clearInterval(timerChasy);
   if (timerSave) clearInterval(timerSave);
   if (timerRender) clearInterval(timerRender);
   if (timerDostizh) clearInterval(timerDostizh);
+  if (timerEnerg) clearInterval(timerEnerg);
 
   timerChasy = setInterval(obnovitChasy, 1000);
   timerSave = setInterval(function() { sohranit(); }, 5000);
@@ -26,6 +41,7 @@ function zapustitTaimery() {
     if (tab == 'lots' || tab == 'market' || tab == 'dom' || tab == 'food') render();
   }, 1500);
   timerDostizh = setInterval(function() { proveritDostizheniya(); }, 5000);
+  timerEnerg = setInterval(function() { proveritEnergiyu(); }, 5000);
 }
 
 function ostanovitTaimery() {
@@ -33,6 +49,7 @@ function ostanovitTaimery() {
   if (timerSave) clearInterval(timerSave);
   if (timerRender) clearInterval(timerRender);
   if (timerDostizh) clearInterval(timerDostizh);
+  if (timerEnerg) clearInterval(timerEnerg);
 }
 
 function posleZagruzki() {
@@ -41,6 +58,7 @@ function posleZagruzki() {
   zapustitTaimery();
   setTimeout(proveritObnovlenie, 600);
   setTimeout(proveritModalki, 1500);
+  setTimeout(proveritEnergiyu, 1000);
 
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
@@ -51,6 +69,7 @@ function posleZagruzki() {
     } else {
       vremyaZahoda = Date.now();
       zapustitTaimery();
+      proveritEnergiyu();
       render();
     }
   });
