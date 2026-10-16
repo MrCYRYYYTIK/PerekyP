@@ -6,14 +6,14 @@ var KOMISSIYA_PRODAZHI_PROCENT = 0.10;
 var MAX_APGREYD = 5;
 var SROK_LOTA_MS = 99999999999;
 var APGREYD_CENA_BAZA = 0.4;
-var APGREYD_CENA_ZA_AP = 0.6;
+var APGREYD_CENA_ZA_AP = 0.4;
 var APGREYD_CENA_MIN = 0.4;
-var APGREYD_CENA_MAX = 0.35;
+var APGREYD_CENA_MAX = 0.6;
 var CENA_DIAPAZON_MIN = 0.7;
 var CENA_DIAPAZON_MAX = 1.5;
 var SHANS_BAZA = 95;
 var SHANS_RAZMER = 85;
-var SHANS_BONUS_ZA_AP = 4;
+var SHANS_BONUS_ZA_AP = 8;
 var VREMYA_PRODAZHI_MIN = 5;
 var VREMYA_PRODAZHI_MAX = 60;
 var EDA_KULDAUN_MIN = 30;
@@ -47,17 +47,41 @@ var dostizheniya = [
   { id: 'first_sell', name: 'Первая продажа', desc: 'Продай первый товар', icon: '💰', reward: 20, done: false },
   { id: 'sell_10', name: 'Десять сделок', desc: 'Продай 10 товаров', icon: '📈', reward: 100, done: false },
   { id: 'sell_50', name: 'Перекуп-про', desc: 'Продай 50 товаров', icon: '🔥', reward: 500, done: false },
+  { id: 'sell_100', name: 'Первая сотня', desc: 'Продай 100 товаров', icon: '🏪', reward: 2000, done: false },
   { id: 'sell_200', name: 'Магнат', desc: 'Продай 200 товаров', icon: '💎', reward: 5000, done: false },
+  { id: 'sell_1000', name: 'Тысячник', desc: 'Продай 1000 товаров', icon: '🏬', reward: 20000, done: false },
+  { id: 'sell_5000', name: 'Промышленник', desc: 'Продай 5000 товаров', icon: '🏭', reward: 200000, done: false },
   { id: 'lvl_5', name: 'Пятый уровень', desc: 'Достигни 5 уровня', icon: '⭐', reward: 200, done: false },
   { id: 'lvl_10', name: 'Десятый уровень', desc: 'Достигни 10 уровня', icon: '🌟', reward: 1000, done: false },
+  { id: 'lvl_15', name: 'Пятнадцатый', desc: 'Достигни 15 уровня', icon: '🌠', reward: 5000, done: false },
   { id: 'lvl_20', name: 'Двадцатый уровень', desc: 'Достигни 20 уровня', icon: '🏆', reward: 10000, done: false },
+  { id: 'lvl_25', name: 'Двадцать пятый', desc: 'Достигни 25 уровня', icon: '💫', reward: 50000, done: false },
+  { id: 'lvl_30', name: 'Тридцатый', desc: 'Достигни 30 уровня', icon: '✨', reward: 200000, done: false },
   { id: 'money_10k', name: 'Первые 10000', desc: 'Накопи 10000₽', icon: '💵', reward: 300, done: false },
   { id: 'money_100k', name: 'Сто тысяч', desc: 'Накопи 100000₽', icon: '🏆', reward: 2000, done: false },
   { id: 'money_1m', name: 'Миллионер', desc: 'Накопи 1 000 000₽', icon: '👑', reward: 20000, done: false },
   { id: 'money_10m', name: 'Десять миллионов', desc: 'Накопи 10 000 000₽', icon: '💠', reward: 100000, done: false },
+  { id: 'money_100m', name: 'Сто миллионов', desc: 'Накопи 100 000 000₽', icon: '💸', reward: 1000000, done: false },
+  { id: 'money_1b', name: 'Миллиардер', desc: 'Накопи 1 000 000 000₽', icon: '💎', reward: 10000000, done: false },
+  { id: 'money_10b', name: 'Богатейший', desc: 'Накопи 10 000 000 000₽', icon: '🤑', reward: 100000000, done: false },
+  { id: 'dom_flat1', name: 'Своя квартира', desc: 'Купи однюшку', icon: '🏠', reward: 2000, done: false },
+  { id: 'dom_flat2', name: 'Просторно', desc: 'Купи двушку', icon: '🏢', reward: 5000, done: false },
   { id: 'dom_house', name: 'Свой дом', desc: 'Купи дом', icon: '🏡', reward: 10000, done: false },
   { id: 'dom_villa', name: 'Вилла', desc: 'Купи виллу', icon: '🏰', reward: 50000, done: false },
   { id: 'dom_mansion', name: 'Особняк', desc: 'Купи особняк', icon: '🏛️', reward: 200000, done: false },
+  { id: 'dom_vtoroy', name: 'Второй дом', desc: 'Купи место под 2-й дом', icon: '🏗️', reward: 100000, done: false },
+  { id: 'up_5', name: 'Мастер', desc: 'Апни товар до +5', icon: '🔧', reward: 500, done: false },
+  { id: 'up_10', name: 'Инженер', desc: 'Апни 10 товаров до +5', icon: '⚙️', reward: 10000, done: false },
+  { id: 'up_50', name: 'Техник', desc: 'Апни 50 товаров до +5', icon: '🛠️', reward: 100000, done: false },
+  { id: 'lot_first', name: 'Первая выставка', desc: 'Выставь первый лот', icon: '🏷️', reward: 100, done: false },
+  { id: 'lot_100', name: 'Оптовик', desc: 'Выставь 100 лотов', icon: '📦', reward: 20000, done: false },
+  { id: 'food_shaurma', name: 'Первый перекус', desc: 'Купи шаурму', icon: '🥙', reward: 50, done: false },
+  { id: 'food_rest', name: 'Ресторатор', desc: 'Купи ресторан', icon: '🍾', reward: 500, done: false },
+  { id: 'sleep_10', name: 'Соня', desc: 'Поспи 10 раз', icon: '😴', reward: 1000, done: false },
+  { id: 'skin_king', name: 'Король', desc: 'Купи скин «Король рынка»', icon: '👑', reward: 5000, done: false },
+  { id: 'skin_dragon', name: 'Дракон', desc: 'Купи скин «Дракон»', icon: '🐲', reward: 50000, done: false },
+  { id: 'bank_first', name: 'Первый кредит', desc: 'Возьми кредит', icon: '🏦', reward: 200, done: false },
+  { id: 'bank_clean', name: 'Чистый', desc: 'Погаси долг', icon: '✅', reward: 500, done: false },
   { id: 'roulette_win', name: 'Джекпот', desc: 'Выиграй 10000₽', icon: '🎰', reward: 500, done: false }
 ];
 
@@ -136,4 +160,4 @@ function trebOpyt(dlyaUrovnya) {
 function formatChislo(n) {
   n = Math.round(n);
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-   }
+    }
