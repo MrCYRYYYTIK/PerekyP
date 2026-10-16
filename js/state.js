@@ -24,10 +24,12 @@ var vtoroyDom = null;
 
 var poslBonus = 0;
 var seriyaDney = 0;
-var poslRul = 0;
 var poslSonDen = 0;
 var poslEdaMin = -9999;
 var pokazyvatModalki = true;
+
+var posledVidenVersiya = '';
+var TEKUSHCHAYA_VERSIYA = '1.1';
 
 var kupilVsego = 0;
 var prodalVsego = 0;
@@ -64,12 +66,13 @@ function sobratSaveObekt() {
     dengi: dengi, lvl: lvl, opyt: opyt,
     energ: energ, maxEnerg: maxEnerg,
     inv: inv, loty: loty, dolg: dolg,
-    poslBonus: poslBonus, seriyaDney: seriyaDney, poslRul: poslRul,
+    poslBonus: poslBonus, seriyaDney: seriyaDney,
     poslSonDen: poslSonDen, poslEdaMin: poslEdaMin,
     activeSkin: activeSkin, dostizheniya: dostizheniya,
     kupilVsego: kupilVsego, prodalVsego: prodalVsego,
     jackpotVyl: jackpotVyl, tema: tema, moeDom: moeDom,
     vtoroyDom: vtoroyDom, pokazyvatModalki: pokazyvatModalki,
+    posledVidenVersiya: posledVidenVersiya,
     igrovoySdvig: igrovoySdvig,
     posledneeSohr: posledneeSohr
   };
@@ -123,7 +126,6 @@ function primenitSave(d) {
   if (typeof d.dolg === 'number' && d.dolg >= 0) dolg = d.dolg;
   if (typeof d.poslBonus === 'number') poslBonus = d.poslBonus;
   if (typeof d.seriyaDney === 'number') seriyaDney = d.seriyaDney;
-  if (typeof d.poslRul === 'number') poslRul = d.poslRul;
   if (typeof d.poslSonDen === 'number') poslSonDen = d.poslSonDen;
   if (typeof d.poslEdaMin === 'number') poslEdaMin = d.poslEdaMin;
   if (typeof d.activeSkin === 'string') activeSkin = d.activeSkin;
@@ -143,6 +145,7 @@ function primenitSave(d) {
   if (typeof d.moeDom === 'string' && naytiDom(d.moeDom)) moeDom = d.moeDom;
   if (d.vtoroyDom === 'mesto' || d.vtoroyDom === null) vtoroyDom = d.vtoroyDom;
   if (typeof d.pokazyvatModalki === 'boolean') pokazyvatModalki = d.pokazyvatModalki;
+  if (typeof d.posledVidenVersiya === 'string') posledVidenVersiya = d.posledVidenVersiya;
 
   var oldSdvig = (typeof d.igrovoySdvig === 'number') ? d.igrovoySdvig : 0;
   var oldSohr = (typeof d.posledneeSohr === 'number') ? d.posledneeSohr : Date.now();
@@ -208,7 +211,6 @@ function sbrosProgressa() {
   activeSkin = '👤';
   poslBonus = 0;
   seriyaDney = 0;
-  poslRul = 0;
   poslSonDen = 0;
   poslEdaMin = -9999;
   kupilVsego = 0;
@@ -216,6 +218,7 @@ function sbrosProgressa() {
   jackpotVyl = false;
   moeDom = 'street';
   vtoroyDom = null;
+  posledVidenVersiya = '';
   for (var i = 0; i < dostizheniya.length; i++) dostizheniya[i].done = false;
 
   toast('🗑️ Прогресс сброшен', 'ok');
@@ -295,4 +298,4 @@ function sekDoProdazhi(l) {
   var ostalos = l.vremyaOzhidaniya - proshlo;
   if (ostalos < 0) ostalos = 0;
   return Math.ceil(ostalos / 1000);
-                                      }
+      }
