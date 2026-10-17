@@ -197,7 +197,7 @@ function prodatLot(uid) {
   energ = energ - 1;
 
   if (prodano) {
-    var komissiya = Math.floor(l.moyaCena * KOMISSIYA_PRODAZHI_PROCENT);
+    var komissiya = komissiyaProdaZhi(l.moyaCena);
     var itog = l.moyaCena - komissiya;
     dengi = dengi + itog;
     var prof = itog - l.kupCena;
@@ -225,7 +225,7 @@ function prodatMgnovenno(uid) {
   var item = naytiTovar(moy.itemId);
   var maxC = maxCenaTovara(item, moy.ap);
   var cenaProd = Math.floor(maxC * 0.75);
-  var komissiya = Math.floor(cenaProd * KOMISSIYA_PRODAZHI_PROCENT);
+  var komissiya = komissiyaProdaZhi(cenaProd);
   var itog = cenaProd - komissiya;
   var prof = itog - moy.kupCena;
 
@@ -665,4 +665,4 @@ function admBystroStart() {
   platilDolg = false;
   toast('🔄 Откат до старта', 'ok');
   sohranit(); render();
-  }
+    }
