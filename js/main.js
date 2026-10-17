@@ -1,4 +1,4 @@
-var timerChasy, timerSave, timerRender, timerDostizh, timerEnerg;
+var timerChasy, timerSave, timerRender, timerDostizh, timerEnerg, timerDohod, timerLoty;
 
 function vkDostupen() {
   return typeof vkBridge !== 'undefined' && vkBridge && typeof vkBridge.send === 'function';
@@ -15,16 +15,30 @@ if (vkDostupen()) {
 }
 
 function proveritEnergiyu() {
-  if (energ >= maxEnerg) return;
   var v = vremyaIgry();
   var tekMin = v.den * 1440 + v.chas * 60 + v.min;
-  if (poslEnergMin < 0) { poslEnergMin = tekMin; return; }
+  if (poslEnergMin < 0 || poslEnergMin === -9999) { poslEnergMin = tekMin; return; }
+  if (energ >= maxEnerg) { poslEnergMin = tekMin; return; }
   if (tekMin - poslEnergMin >= 30) {
     var skolko = Math.floor((tekMin - poslEnergMin) / 30);
     energ += skolko;
     if (energ > maxEnerg) energ = maxEnerg;
-    poslEnergMin = tekMin;
+    poslEnergMin = poslEnergMin + skolko * 30;
     render();
+  }
+}
+
+function proveritLoty() {
+  var now = Date.now();
+  for (var i = loty.length - 1; i >= 0; i--) {
+    var l = loty[i];
+    if (l.srokDo && now > l.srokDo) {
+      inv.push({ uid: Date.now() + Math.random(), itemId: l.itemId, kupCena: l.kupCena, ap: l.ap });
+      loty.splice(i, 1);
+      toast('⏰ Лот истёк, товар в сумке', 'err');
+      sohranit();
+      render();
+    }
   }
 }
 
@@ -34,14 +48,18 @@ function zapustitTaimery() {
   if (timerRender) clearInterval(timerRender);
   if (timerDostizh) clearInterval(timerDostizh);
   if (timerEnerg) clearInterval(timerEnerg);
+  if (timerDohod) clearInterval(timerDohod);
+  if (timerLoty) clearInterval(timerLoty);
 
   timerChasy = setInterval(obnovitChasy, 1000);
   timerSave = setInterval(function() { sohranit(); }, 5000);
   timerRender = setInterval(function() {
-    if (tab == 'lots' || tab == 'market' || tab == 'dom' || tab == 'food') render();
+    if (tab == 'inventory' || tab == 'market' || tab == 'dom' || tab == 'food') render();
   }, 1500);
   timerDostizh = setInterval(function() { proveritDostizheniya(); }, 5000);
   timerEnerg = setInterval(function() { proveritEnergiyu(); }, 5000);
+  timerDohod = setInterval(function() { proveritDohod(); }, 10000);
+  timerLoty = setInterval(function() { proveritLoty(); }, 5000);
 }
 
 function ostanovitTaimery() {
@@ -50,6 +68,8 @@ function ostanovitTaimery() {
   if (timerRender) clearInterval(timerRender);
   if (timerDostizh) clearInterval(timerDostizh);
   if (timerEnerg) clearInterval(timerEnerg);
+  if (timerDohod) clearInterval(timerDohod);
+  if (timerLoty) clearInterval(timerLoty);
 }
 
 function posleZagruzki() {
@@ -59,6 +79,7 @@ function posleZagruzki() {
   setTimeout(proveritObnovlenie, 600);
   setTimeout(proveritModalki, 1500);
   setTimeout(proveritEnergiyu, 1000);
+  setTimeout(proveritDohod, 2000);
 
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
@@ -96,20 +117,14 @@ function podkluchitKlik() {
   if (titul && !titul.dataset.klikPodkl) {
     titul.dataset.klikPodkl = '1';
     titul.addEventListener('click', obrabotatKlikTitul);
-    titul.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      obrabotatKlikTitul();
-    });
+    titul.addEventListener('touchend', function(e) { e.preventDefault(); obrabotatKlikTitul(); });
   }
   var chasy = document.getElementById('clock');
   if (chasy && !chasy.dataset.klikPodkl) {
     chasy.dataset.klikPodkl = '1';
     chasy.style.cursor = 'pointer';
     chasy.addEventListener('click', obrabotatKlikTitul);
-    chasy.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      obrabotatKlikTitul();
-    });
+    chasy.addEventListener('touchend', function(e) { e.preventDefault(); obrabotatKlikTitul(); });
   }
 }
 
