@@ -25,21 +25,29 @@ var EDINIC_OPYT_ZA_APGREYD = 100;
 var EDINIC_OPYT_ZA_SON = 20;
 var EDINIC_OPYT_ZA_BONUS = 50;
 
+var MAX_DOM_UP = 3;
+var DOM_UP_CENA_PROCENT = 0.3;
+var ARENDA_PROCENT = 0.05;
+
 var eda = [
   { id: 'shaurma', name: '🥙 Шаурма', cena: 500, energ: 1, desc: 'Быстро и дёшево' },
+  { id: 'taco', name: '🌮 Тако', cena: 1200, energ: 3, desc: 'Мексиканская закуска' },
   { id: 'pizza', name: '🍕 Пицца', cena: 2000, energ: 6, desc: 'Средний вариант' },
+  { id: 'ramen', name: '🍜 Рамен', cena: 4000, energ: 10, desc: 'Горячий суп' },
   { id: 'burger', name: '🍔 Бургер', cena: 5000, energ: 15, desc: 'Сытный обед' },
+  { id: 'sushi', name: '🍣 Суши', cena: 8000, energ: 20, desc: 'Японская кухня' },
+  { id: 'steak', name: '🥩 Стейк', cena: 12000, energ: 30, desc: 'Премиум-ужин' },
   { id: 'rest', name: '🍾 Ресторан', cena: 15000, energ: 50, desc: 'Полный запас' }
 ];
 
 var doma = [
-  { id: 'street', name: 'Улица', icon: '🛣️', cena: 0, son: 3, desc: 'Спишь на лавке' },
-  { id: 'garage', name: 'Гараж', icon: '🏚️', cena: 50000, son: 6, desc: 'Хоть крыша есть' },
-  { id: 'flat_1', name: 'Однушка', icon: '🏠', cena: 300000, son: 10, desc: 'Своя квартира' },
-  { id: 'flat_2', name: 'Двушка', icon: '🏢', cena: 800000, son: 15, desc: 'Просторно' },
-  { id: 'house', name: 'Дом', icon: '🏡', cena: 2500000, son: 20, desc: 'Настоящий дом' },
-  { id: 'villa', name: 'Вилла', icon: '🏰', cena: 10000000, son: 25, desc: 'Роскошь' },
-  { id: 'mansion', name: 'Особняк', icon: '🏛️', cena: 50000000, son: 30, desc: 'Мечта магната' }
+  { id: 'street', name: 'Улица', icon: '🛣️', cena: 0, son: 3, dohod: 0, desc: 'Спишь на лавке' },
+  { id: 'garage', name: 'Гараж', icon: '🏚️', cena: 50000, son: 6, dohod: 500, desc: 'Хоть крыша есть' },
+  { id: 'flat_1', name: 'Однушка', icon: '🏠', cena: 300000, son: 10, dohod: 2000, desc: 'Своя квартира' },
+  { id: 'flat_2', name: 'Двушка', icon: '🏢', cena: 800000, son: 15, dohod: 5000, desc: 'Просторно' },
+  { id: 'house', name: 'Дом', icon: '🏡', cena: 2500000, son: 20, dohod: 15000, desc: 'Настоящий дом' },
+  { id: 'villa', name: 'Вилла', icon: '🏰', cena: 10000000, son: 25, dohod: 60000, desc: 'Роскошь' },
+  { id: 'mansion', name: 'Особняк', icon: '🏛️', cena: 50000000, son: 30, dohod: 300000, desc: 'Мечта магната' }
 ];
 
 var dostizheniya = [
@@ -109,7 +117,64 @@ var tovari = [
   { id: 'car_sport', name: '🏎️ Спорткар', cena: 12000000, lvl: 15, ap: 3000000, category: 'auto' },
   { id: 'penthouse', name: '🏘️ Пентхаус', cena: 25000000, lvl: 18, ap: 6000000, category: 'realty' },
   { id: 'island', name: '🏝️ Остров', cena: 50000000, lvl: 21, ap: 12000000, category: 'realty' },
-  { id: 'car_super', name: '⚡ СУПЕР-КАР', cena: 100000000, lvl: 25, ap: 25000000, category: 'auto' }
+  { id: 'car_super', name: '⚡ СУПЕР-КАР', cena: 100000000, lvl: 25, ap: 25000000, category: 'auto' },
+  { id: 'watch', name: '⌚ Умные часы', cena: 5000, lvl: 2, ap: 1200, category: 'tech' },
+  { id: 'jacket', name: '🧥 Куртка', cena: 4000, lvl: 1, ap: 1000, category: 'clothes' },
+  { id: 'glasses', name: '🕶️ Очки', cena: 15000, lvl: 2, ap: 4000, category: 'clothes' },
+  { id: 'ps', name: '🎮 PlayStation', cena: 30000, lvl: 3, ap: 8000, category: 'tech' },
+  { id: 'camera', name: '📷 Фотоаппарат', cena: 60000, lvl: 4, ap: 15000, category: 'tech' },
+  { id: 'pc', name: '🖥️ Компьютер', cena: 120000, lvl: 6, ap: 30000, category: 'tech' },
+  { id: 'drone', name: '🚁 Дрон', cena: 250000, lvl: 8, ap: 60000, category: 'tech' },
+  { id: 'rolex', name: '⌚ Ролекс', cena: 800000, lvl: 10, ap: 200000, category: 'clothes' },
+  { id: 'boat', name: '🛥️ Катер', cena: 15000000, lvl: 16, ap: 3500000, category: 'auto' },
+  { id: 'yacht', name: '⛵ Яхта', cena: 60000000, lvl: 22, ap: 15000000, category: 'auto' }
+];
+
+var keysy = [
+  {
+    id: 'common', name: '🎁 Обычный кейс', cena: 10000, desc: 'Шанс на хороший товар',
+    prizes: [
+      { type: 'money', amount: 5000, weight: 30, name: '5000₽', icon: '💰' },
+      { type: 'money', amount: 10000, weight: 20, name: '10000₽', icon: '💰' },
+      { type: 'item', itemId: 'phone', weight: 25, name: 'Телефон', icon: '📱' },
+      { type: 'item', itemId: 'sneak', weight: 15, name: 'Кроссовки', icon: '👟' },
+      { type: 'item', itemId: 'bike', weight: 8, name: 'Велосипед', icon: '🚲' },
+      { type: 'item', itemId: 'laptop', weight: 2, name: 'Ноутбук 🔥', icon: '💻' }
+    ]
+  },
+  {
+    id: 'rare', name: '💎 Редкий кейс', cena: 100000, desc: 'Шанс на дорогой товар',
+    prizes: [
+      { type: 'money', amount: 50000, weight: 30, name: '50K₽', icon: '💰' },
+      { type: 'money', amount: 100000, weight: 20, name: '100K₽', icon: '💰' },
+      { type: 'item', itemId: 'tv', weight: 25, name: 'Телевизор', icon: '📺' },
+      { type: 'item', itemId: 'moto', weight: 15, name: 'Мотоцикл', icon: '🏍️' },
+      { type: 'item', itemId: 'car_old', weight: 8, name: 'Машина 🔥', icon: '🚗' },
+      { type: 'item', itemId: 'car_new', weight: 2, name: 'Хорошая 💎', icon: '🚙' }
+    ]
+  },
+  {
+    id: 'legendary', name: '👑 Легендарный кейс', cena: 1000000, desc: 'Эпические призы',
+    prizes: [
+      { type: 'money', amount: 500000, weight: 30, name: '500K₽', icon: '💰' },
+      { type: 'money', amount: 1000000, weight: 20, name: '1M₽', icon: '💰' },
+      { type: 'item', itemId: 'car_new', weight: 25, name: 'Хорошая', icon: '🚙' },
+      { type: 'item', itemId: 'car_premium', weight: 15, name: 'Премиум', icon: '🚘' },
+      { type: 'item', itemId: 'car_sport', weight: 8, name: 'Спорткар 🔥', icon: '🏎️' },
+      { type: 'item', itemId: 'penthouse', weight: 2, name: 'Пентхаус 💎', icon: '🏘️' }
+    ]
+  },
+  {
+    id: 'mythic', name: '🐉 Мифический кейс', cena: 25000000, desc: 'Легендарные призы',
+    prizes: [
+      { type: 'money', amount: 15000000, weight: 30, name: '15M₽', icon: '💰' },
+      { type: 'money', amount: 25000000, weight: 20, name: '25M₽', icon: '💰' },
+      { type: 'item', itemId: 'car_sport', weight: 25, name: 'Спорткар', icon: '🏎️' },
+      { type: 'item', itemId: 'penthouse', weight: 15, name: 'Пентхаус', icon: '🏘️' },
+      { type: 'item', itemId: 'island', weight: 8, name: 'Остров 🔥', icon: '🏝️' },
+      { type: 'item', itemId: 'car_super', weight: 2, name: 'СУПЕР-КАР 💎', icon: '⚡' }
+    ]
+  }
 ];
 
 function naytiTovar(itemId) {
@@ -135,13 +200,8 @@ function maxCenaTovara(item, ap) {
   return Math.floor(item.cena * (1 + ap * APGREYD_CENA_MAX) * CENA_DIAPAZON_MAX);
 }
 
-function komissiyaZa(price) {
-  return 0;
-}
-
-function komissiyaProdaZhi(price) {
-  return 0;
-}
+function komissiyaZa(price) { return 0; }
+function komissiyaProdaZhi(price) { return 0; }
 
 function energiyaZaAp(item, ap) {
   return 1 + Math.floor(item.lvl / 3) + ap;
@@ -162,4 +222,4 @@ function trebOpyt(dlyaUrovnya) {
 function formatChislo(n) {
   n = Math.round(n);
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-}
+    }
