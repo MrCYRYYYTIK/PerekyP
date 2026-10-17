@@ -136,9 +136,19 @@ function maxCenaTovara(item, ap) {
 }
 
 function komissiyaZa(price) {
-  var k = Math.floor(price * KOMISSIYA_LOTA_PROCENT);
+  if (price <= 10000) return 0;
+  var k;
+  if (price <= 100000) k = Math.floor(price * 0.003);
+  else k = Math.floor(price * 0.005);
   if (k > KOMISSIYA_LOTA_MAX) k = KOMISSIYA_LOTA_MAX;
   return k;
+}
+
+function komissiyaProdaZhi(price) {
+  if (price <= 5000) return Math.floor(price * 0.03);
+  if (price <= 50000) return Math.floor(price * 0.05);
+  if (price <= 500000) return Math.floor(price * 0.07);
+  return Math.floor(price * 0.10);
 }
 
 function energiyaZaAp(item, ap) {
@@ -160,4 +170,4 @@ function trebOpyt(dlyaUrovnya) {
 function formatChislo(n) {
   n = Math.round(n);
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    }
+}
