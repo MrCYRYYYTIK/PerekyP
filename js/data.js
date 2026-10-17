@@ -1,8 +1,8 @@
 var MNOZHITEL_V_IGRE = 60;
 
-var KOMISSIYA_LOTA_PROCENT = 0.005;
-var KOMISSIYA_LOTA_MAX = 10000;
-var KOMISSIYA_PRODAZHI_PROCENT = 0.10;
+var KOMISSIYA_LOTA_PROCENT = 0;
+var KOMISSIYA_LOTA_MAX = 0;
+var KOMISSIYA_PRODAZHI_PROCENT = 0;
 var MAX_APGREYD = 5;
 var SROK_LOTA_MS = 99999999999;
 var APGREYD_CENA_BAZA = 0.4;
@@ -136,19 +136,11 @@ function maxCenaTovara(item, ap) {
 }
 
 function komissiyaZa(price) {
-  if (price <= 10000) return 0;
-  var k;
-  if (price <= 100000) k = Math.floor(price * 0.003);
-  else k = Math.floor(price * 0.005);
-  if (k > KOMISSIYA_LOTA_MAX) k = KOMISSIYA_LOTA_MAX;
-  return k;
+  return 0;
 }
 
 function komissiyaProdaZhi(price) {
-  if (price <= 5000) return Math.floor(price * 0.03);
-  if (price <= 50000) return Math.floor(price * 0.05);
-  if (price <= 500000) return Math.floor(price * 0.07);
-  return Math.floor(price * 0.10);
+  return 0;
 }
 
 function energiyaZaAp(item, ap) {
