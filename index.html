@@ -27,7 +27,7 @@
 <div class="tabs">
   <div class="tab active" data-tab="market">🛒 Рынок</div>
   <div class="tab" data-tab="inventory">📦 Сумка</div>
-  <div class="tab" data-tab="lots">🏷️ Лоты</div>
+  <div class="tab" data-tab="keysy">🎁 Кейсы</div>
   <div class="tab" data-tab="food">🍔 Еда</div>
   <div class="tab" data-tab="dom">🏠 Жильё</div>
   <div class="tab" data-tab="bank">🏦 Банк</div>
@@ -58,14 +58,12 @@
     <h2>🏷️ Выставить лот</h2>
     <div class="modal-emoji" style="font-size:40px;">💰</div>
     <p style="font-weight:bold;margin-bottom:10px;" id="lotaItemName">Товар</p>
-    <div class="modal-hint">
-      Мин: <b id="lotaMin">0</b>₽ · Макс: <b id="lotaMax">0</b>₽
-    </div>
+    <div class="modal-hint">Мин: <b id="lotaMin">0</b>₽ · Макс: <b id="lotaMax">0</b>₽</div>
     <input type="number" id="lotaCena" placeholder="Твоя цена" style="width:100%;padding:12px;border-radius:8px;border:2px solid #66ccff;background:#222;color:white;font-size:16px;text-align:center;margin-top:10px;">
-    <div class="modal-hint" style="margin-top:6px;">
-      ✅ Без комиссии
-    </div>
+    <div class="modal-hint" style="margin-top:6px;">✅ Без комиссии</div>
     <div id="lotaOshibka" style="color:#ff6666;font-size:12px;margin-top:6px;display:none;">Ошибка</div>
+    <button class="btn purple full" style="margin-top:8px;font-size:12px;" onclick="propustitVremya()">⏩ Пропустить время (риск!)</button>
+    <div class="modal-hint" style="font-size:10px;margin-top:4px;">Лоты могут продаться, еда остынет</div>
     <div class="modal-btns">
       <button class="btn" onclick="zakrModal('modalLota')">Отмена</button>
       <button class="btn green" onclick="podtverdLota()">🏷️ Выставить</button>
@@ -73,37 +71,22 @@
   </div>
 </div>
 
-<div class="modal-bg" id="modalObnovlenie">
-  <div class="modal">
-    <h2>🎉 Обновление 1.1!</h2>
-    <div class="modal-emoji">🎉</div>
-    <div style="text-align:left;font-size:13px;line-height:1.7;margin:12px 0;">
-      ⏱️ <b>Время ускорилось</b><br>
-      <span style="color:#aaa;font-size:11px;">1 секунда = 1 игровая минута</span><br><br>
-
-      💰 <b>Цены выросли</b><br>
-      <span style="color:#aaa;font-size:11px;">Товары дороже в 2–3 раза</span><br><br>
-
-      🏘️ <b>Новые товары</b><br>
-      <span style="color:#aaa;font-size:11px;">🏘️ Пентхаус (25 млн) и 🏝️ Остров (50 млн)</span><br><br>
-
-      ⚡ <b>Автовосстановление энергии</b><br>
-      <span style="color:#aaa;font-size:11px;">+1 ⚡ каждые 30 игровых минут</span><br><br>
-
-      🚗 <b>Убраны товары</b><br>
-      <span style="color:#aaa;font-size:11px;">Люксовая тачка и Гиперкар</span><br><br>
-
-      🎰 <b>Убрана рулетка дня</b><br>
-      <span style="color:#aaa;font-size:11px;">Скоро вернётся в казино</span><br><br>
-
-      💾 <b>Сохранение в облако ВК</b><br>
-      <span style="color:#aaa;font-size:11px;">Прогресс не теряется между устройствами</span><br><br>
-
-      🛡️ <b>Надёжность</b><br>
-      <span style="color:#aaa;font-size:11px;">Битые сохранения больше не ломают игру</span>
+<div class="modal-bg" id="modalKeys">
+  <div class="modal" style="max-width:95vw;padding:16px;">
+    <h2 id="keysTitle">🎁 Открытие кейса</h2>
+    <div id="keysOpisanie" class="modal-hint" style="margin-bottom:12px;">...</div>
+    <div class="keys-zone" id="keysZone">
+      <div class="keys-pointer"></div>
+      <div class="keys-lenta" id="keysLenta"></div>
     </div>
-    <div class="modal-btns">
-      <button class="btn gold" style="flex:1;padding:12px;font-size:14px;" onclick="zakrObnovlenie()">🎮 Играть!</button>
+    <div id="keysResult" style="display:none;margin-top:16px;">
+      <div style="font-size:18px;font-weight:bold;" id="keysResultText">🎉 Выпало!</div>
+      <div class="modal-btns" style="margin-top:12px;">
+        <button class="btn gold" onclick="zakrytKeys()">✅ Забрать</button>
+      </div>
+    </div>
+    <div class="modal-btns" id="keysBtns">
+      <button class="btn" onclick="zakrModal('modalKeys')">Отмена</button>
     </div>
   </div>
 </div>
