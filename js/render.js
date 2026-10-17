@@ -112,6 +112,7 @@ function renderInventory(c) {
     if (gotov && sekAktiv > 0) h += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать</button>';
     else if (gotov && sekAktiv <= 0) h += '<button class="btn small" disabled>😴 Ждать</button>';
     else h += '<button class="btn small" disabled>⏳ ' + sek + 'с</button>';
+    h += '<button class="btn small purple" onclick="propustitVremya(' + l.uid + ')">⏩</button>';
     h += '<button class="btn small red" onclick="zabratLot(' + l.uid + ')">↩️ Снять</button>';
     h += '</div></div>';
   }
@@ -346,4 +347,4 @@ function renderSettings(c, v) {
   hst += '<div class="card red"><div class="card-name" style="margin-bottom:8px">🗑️ Сброс</div>';
   hst += '<button class="btn red full" onclick="sbrosProgressa()">Сбросить прогресс</button></div>';
   c.innerHTML = hst;
-      }
+        }
