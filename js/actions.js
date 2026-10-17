@@ -375,7 +375,7 @@ function proveritDohod() {
   render();
 }
 
-function propustitVremya() {
+function propustitVremya(uid) {
   var rnd = Math.random();
   var minPropusk, opisanie;
   if (rnd < 0.60) { minPropusk = 0.5; opisanie = '30 сек'; }
@@ -401,7 +401,6 @@ function propustitVremya() {
   var msg = '⏩ Пропущено: ' + opisanie;
   if (prodano > 0) msg += ' · Продано: ' + prodano;
   toast(msg, 'gold');
-  zakrModal('modalLota');
   sohranit();
   render();
   obnovitChasy();
