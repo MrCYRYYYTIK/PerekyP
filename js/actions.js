@@ -384,40 +384,9 @@ function propustitVremya(uid) {
   else if (rnd < 0.99) { minPropusk = 60; opisanie = '1 час'; }
   else { minPropusk = 360; opisanie = '6 часов'; }
 
-  var l = null;
-  for (var i = 0; i < loty.length; i++) if (loty[i].uid == uid) l = loty[i];
-
-  if (!l) {
-    igrovoySdvig += minPropusk * 60 * 1000;
-    vremyaZahoda = Date.now();
-    toast('⏩ Пропущено: ' + opisanie, 'gold');
-    sohranit();
-    render();
-    obnovitChasy();
-    return;
-  }
-
-  var gotov = sekDoProdazhi(l) <= 0;
-  var sekAktiv = 999;
-  if (l.vremyaAktivnosti) {
-    sekAktiv = Math.ceil((l.vremyaAktivnosti - Date.now()) / 1000);
-  }
-  var aktivno = gotov && sekAktiv > 0;
-
-  if (aktivno && minPropusk * 60 * 1000 > sekAktiv * 1000) {
-    var item2 = naytiTovar(l.itemId);
-    rasschitatShansICena(l, item2);
-    toast('😴 Пропустил покупателя! Ждать заново: ' + Math.round(l.vremyaOzhidaniya / 1000) + ' сек', 'err');
-    igrovoySdvig += minPropusk * 60 * 1000;
-    vremyaZahoda = Date.now();
-    sohranit();
-    render();
-    obnovitChasy();
-    return;
-  }
-
   igrovoySdvig += minPropusk * 60 * 1000;
   vremyaZahoda = Date.now();
+
   toast('⏩ Пропущено: ' + opisanie, 'gold');
   sohranit();
   render();
