@@ -30,15 +30,21 @@ function proveritEnergiyu() {
 
 function proveritLoty() {
   var now = Date.now();
-  for (var i = loty.length - 1; i >= 0; i--) {
+  var perestavit = false;
+  for (var i = 0; i < loty.length; i++) {
     var l = loty[i];
-    if (l.srokDo && now > l.srokDo) {
-      inv.push({ uid: Date.now() + Math.random(), itemId: l.itemId, kupCena: l.kupCena, ap: l.ap });
-      loty.splice(i, 1);
-      toast('⏰ Лот истёк, товар в сумке', 'err');
-      sohranit();
-      render();
+    if (l.vremyaAktivnosti && now > l.vremyaAktivnosti) {
+      var item = naytiTovar(l.itemId);
+      if (item) {
+        rasschitatShansICena(l, item);
+        perestavit = true;
+      }
     }
+  }
+  if (perestavit) {
+    toast('😴 Покупатель ушёл. Ждать заново!', 'err');
+    sohranit();
+    render();
   }
 }
 
