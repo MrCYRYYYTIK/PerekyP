@@ -104,13 +104,11 @@ function renderInventory(c) {
     h += '<div class="card-info"><div class="card-name">🏷️ ' + t2.name + (l.ap > 0 ? ' +' + l.ap : '') + '</div>';
     h += '<div class="card-meta">Куплено: ' + formatChislo(l.kupCena) + '₽</div>';
     if (gotov && sekAktiv > 0) h += '<div class="lot-chance">✅ Шанс ' + shans + '% · успей за ' + sekAktiv + 'с</div>';
-    else if (gotov && sekAktiv <= 0) h += '<div class="lot-timer">😴 Покупатель ушёл · ждать</div>';
     else h += '<div class="lot-timer">⏳ ' + sek + ' сек · шанс ' + shans + '%</div>';
     h += '</div><div class="card-price">' + formatChislo(l.moyaCena) + ' ₽</div>';
     h += '</div><div class="lot-bar"><div class="lot-bar-in" style="width:' + progress + '%"></div></div>';
     h += '<div class="card-row" style="margin-top:8px">';
     if (gotov && sekAktiv > 0) h += '<button class="btn small green" onclick="prodatLot(' + l.uid + ')">💰 Продать</button>';
-    else if (gotov && sekAktiv <= 0) h += '<button class="btn small" disabled>😴 Ждать</button>';
     else h += '<button class="btn small" disabled>⏳ ' + sek + 'с</button>';
     h += '<button class="btn small purple" onclick="propustitVremya(' + l.uid + ')">⏩</button>';
     h += '<button class="btn small red" onclick="zabratLot(' + l.uid + ')">↩️ Снять</button>';
@@ -347,4 +345,4 @@ function renderSettings(c, v) {
   hst += '<div class="card red"><div class="card-name" style="margin-bottom:8px">🗑️ Сброс</div>';
   hst += '<button class="btn red full" onclick="sbrosProgressa()">Сбросить прогресс</button></div>';
   c.innerHTML = hst;
-        }
+      }
