@@ -89,8 +89,7 @@ var dostizheniya = [
   { id: 'skin_king', name: 'Король', desc: 'Купи скин «Король рынка»', icon: '👑', reward: 5000, done: false },
   { id: 'skin_dragon', name: 'Дракон', desc: 'Купи скин «Дракон»', icon: '🐲', reward: 50000, done: false },
   { id: 'bank_first', name: 'Первый кредит', desc: 'Возьми кредит', icon: '🏦', reward: 200, done: false },
-  { id: 'bank_clean', name: 'Чистый', desc: 'Погаси долг', icon: '✅', reward: 500, done: false },
-  { id: 'roulette_win', name: 'Джекпот', desc: 'Выиграй 10000₽', icon: '🎰', reward: 500, done: false }
+  { id: 'bank_clean', name: 'Чистый', desc: 'Погаси долг', icon: '✅', reward: 500, done: false }
 ];
 
 var skiny = [
@@ -109,6 +108,7 @@ var tovari = [
   { id: 'bike', name: '🚲 Велосипед', cena: 8000, lvl: 2, ap: 2000, category: 'tech' },
   { id: 'laptop', name: '💻 Ноутбук', cena: 25000, lvl: 3, ap: 6000, category: 'tech' },
   { id: 'guitar', name: '🎸 Гитара', cena: 50000, lvl: 4, ap: 12000, category: 'music' },
+  { id: 'synth', name: '🎹 Синтезатор', cena: 100000, lvl: 6, ap: 25000, category: 'music' },
   { id: 'tv', name: '📺 Телевизор', cena: 80000, lvl: 5, ap: 20000, category: 'tech' },
   { id: 'moto', name: '🏍️ Мотоцикл', cena: 200000, lvl: 7, ap: 50000, category: 'auto' },
   { id: 'car_old', name: '🚗 Старая машина', cena: 500000, lvl: 9, ap: 120000, category: 'auto' },
@@ -134,45 +134,45 @@ var keysy = [
   {
     id: 'common', name: '🎁 Обычный кейс', cena: 10000, desc: 'Шанс на хороший товар',
     prizes: [
-      { type: 'money', amount: 5000, weight: 30, name: '5000₽', icon: '💰' },
-      { type: 'money', amount: 10000, weight: 20, name: '10000₽', icon: '💰' },
-      { type: 'item', itemId: 'phone', weight: 25, name: 'Телефон', icon: '📱' },
-      { type: 'item', itemId: 'sneak', weight: 15, name: 'Кроссовки', icon: '👟' },
-      { type: 'item', itemId: 'bike', weight: 8, name: 'Велосипед', icon: '🚲' },
-      { type: 'item', itemId: 'laptop', weight: 2, name: 'Ноутбук 🔥', icon: '💻' }
+      { type: 'money', amount: 1500, weight: 35, name: '1500₽', icon: '💰' },
+      { type: 'money', amount: 4000, weight: 30, name: '4000₽', icon: '💰' },
+      { type: 'item', itemId: 'phone', weight: 18, name: 'Телефон', icon: '📱' },
+      { type: 'item', itemId: 'sneak', weight: 12, name: 'Кроссовки', icon: '👟' },
+      { type: 'item', itemId: 'bike', weight: 3.5, name: 'Велосипед', icon: '🚲' },
+      { type: 'item', itemId: 'laptop', weight: 1.5, name: 'Ноутбук 🔥', icon: '💻' }
     ]
   },
   {
     id: 'rare', name: '💎 Редкий кейс', cena: 100000, desc: 'Шанс на дорогой товар',
     prizes: [
+      { type: 'money', amount: 20000, weight: 35, name: '20K₽', icon: '💰' },
       { type: 'money', amount: 50000, weight: 30, name: '50K₽', icon: '💰' },
-      { type: 'money', amount: 100000, weight: 20, name: '100K₽', icon: '💰' },
-      { type: 'item', itemId: 'tv', weight: 25, name: 'Телевизор', icon: '📺' },
-      { type: 'item', itemId: 'moto', weight: 15, name: 'Мотоцикл', icon: '🏍️' },
-      { type: 'item', itemId: 'car_old', weight: 8, name: 'Машина 🔥', icon: '🚗' },
-      { type: 'item', itemId: 'car_new', weight: 2, name: 'Хорошая 💎', icon: '🚙' }
+      { type: 'item', itemId: 'tv', weight: 18, name: 'Телевизор', icon: '📺' },
+      { type: 'item', itemId: 'moto', weight: 12, name: 'Мотоцикл', icon: '🏍️' },
+      { type: 'item', itemId: 'car_old', weight: 3.5, name: 'Машина 🔥', icon: '🚗' },
+      { type: 'item', itemId: 'car_new', weight: 1.5, name: 'Хорошая 💎', icon: '🚙' }
     ]
   },
   {
     id: 'legendary', name: '👑 Легендарный кейс', cena: 1000000, desc: 'Эпические призы',
     prizes: [
-      { type: 'money', amount: 500000, weight: 30, name: '500K₽', icon: '💰' },
-      { type: 'money', amount: 1000000, weight: 20, name: '1M₽', icon: '💰' },
-      { type: 'item', itemId: 'car_new', weight: 25, name: 'Хорошая', icon: '🚙' },
-      { type: 'item', itemId: 'car_premium', weight: 15, name: 'Премиум', icon: '🚘' },
-      { type: 'item', itemId: 'car_sport', weight: 8, name: 'Спорткар 🔥', icon: '🏎️' },
-      { type: 'item', itemId: 'penthouse', weight: 2, name: 'Пентхаус 💎', icon: '🏘️' }
+      { type: 'money', amount: 150000, weight: 40, name: '150K₽', icon: '💰' },
+      { type: 'money', amount: 400000, weight: 32, name: '400K₽', icon: '💰' },
+      { type: 'item', itemId: 'car_new', weight: 18, name: 'Хорошая', icon: '🚙' },
+      { type: 'item', itemId: 'car_premium', weight: 8, name: 'Премиум', icon: '🚘' },
+      { type: 'item', itemId: 'car_sport', weight: 1.5, name: 'Спорткар 🔥', icon: '🏎️' },
+      { type: 'item', itemId: 'penthouse', weight: 0.5, name: 'Пентхаус 💎', icon: '🏘️' }
     ]
   },
   {
     id: 'mythic', name: '🐉 Мифический кейс', cena: 25000000, desc: 'Легендарные призы',
     prizes: [
-      { type: 'money', amount: 15000000, weight: 30, name: '15M₽', icon: '💰' },
-      { type: 'money', amount: 25000000, weight: 20, name: '25M₽', icon: '💰' },
-      { type: 'item', itemId: 'car_sport', weight: 25, name: 'Спорткар', icon: '🏎️' },
-      { type: 'item', itemId: 'penthouse', weight: 15, name: 'Пентхаус', icon: '🏘️' },
-      { type: 'item', itemId: 'island', weight: 8, name: 'Остров 🔥', icon: '🏝️' },
-      { type: 'item', itemId: 'car_super', weight: 2, name: 'СУПЕР-КАР 💎', icon: '⚡' }
+      { type: 'money', amount: 4000000, weight: 38, name: '4M₽', icon: '💰' },
+      { type: 'money', amount: 10000000, weight: 32, name: '10M₽', icon: '💰' },
+      { type: 'item', itemId: 'car_sport', weight: 18, name: 'Спорткар', icon: '🏎️' },
+      { type: 'item', itemId: 'penthouse', weight: 9, name: 'Пентхаус', icon: '🏘️' },
+      { type: 'item', itemId: 'island', weight: 2, name: 'Остров 🔥', icon: '🏝️' },
+      { type: 'item', itemId: 'car_super', weight: 1, name: 'СУПЕР-КАР 💎', icon: '⚡' }
     ]
   }
 ];
@@ -222,4 +222,4 @@ function trebOpyt(dlyaUrovnya) {
 function formatChislo(n) {
   n = Math.round(n);
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    }
+   }
