@@ -384,23 +384,41 @@ function propustitVremya(uid) {
   else if (rnd < 0.99) { minPropusk = 60; opisanie = '1 час'; }
   else { minPropusk = 360; opisanie = '6 часов'; }
 
-  igrovoySdvig += minPropusk * 60 * 1000;
-  vremyaZahoda = Date.now();
+  var l = null;
+  for (var i = 0; i < loty.length; i++) if (loty[i].uid == uid) l = loty[i];
 
-  var prodano = 0;
-  for (var i = loty.length - 1; i >= 0; i--) {
-    if (Math.random() * 100 < (loty[i].shansProdagy || 50)) {
-      dengi += loty[i].moyaCena;
-      prodano++;
-      prodalVsego++;
-      loty.splice(i, 1);
-    }
+  if (!l) {
+    igrovoySdvig += minPropusk * 60 * 1000;
+    vremyaZahoda = Date.now();
+    toast('⏩ Пропущено: ' + opisanie, 'gold');
+    sohranit();
+    render();
+    obnovitChasy();
+    return;
   }
 
-  proveritDostizheniya();
-  var msg = '⏩ Пропущено: ' + opisanie;
-  if (prodano > 0) msg += ' · Продано: ' + prodano;
-  toast(msg, 'gold');
+  var gotov = sekDoProdazhi(l) <= 0;
+  var sekAktiv = 999;
+  if (l.vremyaAktivnosti) {
+    sekAktiv = Math.ceil((l.vremyaAktivnosti - Date.now()) / 1000);
+  }
+  var aktivno = gotov && sekAktiv > 0;
+
+  if (aktivno && minPropusk * 60 * 1000 > sekAktiv * 1000) {
+    var item2 = naytiTovar(l.itemId);
+    rasschitatShansICena(l, item2);
+    toast('😴 Пропустил покупателя! Ждать заново: ' + Math.round(l.vremyaOzhidaniya / 1000) + ' сек', 'err');
+    igrovoySdvig += minPropusk * 60 * 1000;
+    vremyaZahoda = Date.now();
+    sohranit();
+    render();
+    obnovitChasy();
+    return;
+  }
+
+  igrovoySdvig += minPropusk * 60 * 1000;
+  vremyaZahoda = Date.now();
+  toast('⏩ Пропущено: ' + opisanie, 'gold');
   sohranit();
   render();
   obnovitChasy();
@@ -469,15 +487,21 @@ function pereklTemu() { tema = (tema == 'dark') ? 'light' : 'dark'; primenitTemu
 function pereklModalki() { pokazyvatModalki = !pokazyvatModalki; sohranit(); render(); }
 
 var keysAnimating = false;
+var keysTekushchiy = null;
+var keysCenaOplachena = 0;
+var keysMozhnoZabrat = false;
 
 function otkritKeys(keysId) {
-  if (keysAnimating) return;
+  if (keysAnimating) { toast('⏳ Подожди...', 'err'); return; }
   var k = null;
   for (var i = 0; i < keysy.length; i++) if (keysy[i].id == keysId) k = keysy[i];
   if (!k) return;
   if (dengi < k.cena) { toast('💸 Мало денег', 'err'); return; }
 
   dengi -= k.cena;
+  keysTekushchiy = k;
+  keysCenaOplachena = k.cena;
+  keysMozhnoZabrat = false;
   sohranit();
   keysAnimating = true;
 
@@ -529,6 +553,8 @@ function otkritKeys(keysId) {
       else if (vyigral.type === 'item') {
         inv.push({ uid: Date.now() + Math.random(), itemId: vyigral.itemId, kupCena: 0, ap: 0 });
       }
+      keysMozhnoZabrat = true;
+      keysCenaOplachena = 0;
       document.getElementById('keysResultText').textContent = '🎉 ' + vyigral.icon + ' ' + vyigral.name + '!';
       document.getElementById('keysResult').style.display = 'block';
       document.getElementById('keysBtns').style.display = 'none';
@@ -542,7 +568,25 @@ function otkritKeys(keysId) {
 
 function zakrytKeys() {
   keysAnimating = false;
+  keysTekushchiy = null;
+  keysCenaOplachena = 0;
+  keysMozhnoZabrat = false;
   zakrModal('modalKeys');
+}
+
+function otmenitKeys() {
+  if (keysMozhnoZabrat) { zakrytKeys(); return; }
+  if (keysCenaOplachena > 0) {
+    dengi += keysCenaOplachena;
+    sohranit();
+    toast('💸 Возврат ' + formatChislo(keysCenaOplachena) + '₽', 'ok');
+  }
+  keysAnimating = false;
+  keysTekushchiy = null;
+  keysCenaOplachena = 0;
+  keysMozhnoZabrat = false;
+  zakrModal('modalKeys');
+  render();
 }
 
 var ADMIN_PAROL = 'Dimasik228';
@@ -611,30 +655,4 @@ function admDobDengi() { var v = parseInt(document.getElementById('admDengi').va
 function admUbrDengi() { var v = parseInt(document.getElementById('admDengi').value); if (isNaN(v) || v <= 0) return toast('❌ Введи число', 'err'); dengi -= v; if (dengi < 0) dengi = 0; toast('💸 −' + formatChislo(v) + '₽', 'err'); sohranit(); render(); }
 function admSetDengi() { var v = parseInt(document.getElementById('admDengi').value); if (isNaN(v) || v < 0) return toast('❌ Введи число', 'err'); dengi = v; toast('💰 Установлено: ' + formatChislo(v) + '₽', 'gold'); sohranit(); render(); }
 function admSetLvl() { var v = parseInt(document.getElementById('admLvl').value); if (isNaN(v) || v < 1 || v > 100) return toast('❌ 1-100', 'err'); lvl = v; maxEnerg = 20 + lvl * 2; opyt = trebOpyt(lvl); toast('⭐ Уровень: ' + v, 'gold'); sohranit(); render(); }
-function admAddOpyt() { var v = parseInt(document.getElementById('admLvl').value); if (isNaN(v) || v <= 0) return toast('❌ Введи число', 'err'); dobavitOpyt(v); toast('📈 +' + formatChislo(v) + ' опыта', 'gold'); sohranit(); render(); }
-function admMaxEnerg() { energ = maxEnerg; toast('⚡ ' + energ + '/' + maxEnerg, 'gold'); sohranit(); render(); }
-
-function admSetVremya() {
-  var d = parseInt(document.getElementById('admDen').value);
-  var c = parseInt(document.getElementById('admChas').value);
-  if (isNaN(d) || d < 1) return toast('❌ Неверный день', 'err');
-  if (isNaN(c) || c < 0 || c > 23) return toast('❌ Час 0-23', 'err');
-  igrovoySdvig = ((d - 1) * 1440 + c * 60) * 60 * 1000;
-  vremyaZahoda = Date.now();
-  toast('🕐 День ' + d + ', ' + (c < 10 ? '0' + c : c) + ':00', 'gold');
-  sohranit(); render(); obnovitChasy();
-}
-
-function admVydatTovar() { var id = document.getElementById('admTovar').value; var it = naytiTovar(id); if (!it) return; inv.push({ uid: Date.now() + Math.random(), itemId: it.id, kupCena: 0, ap: 0 }); toast('📦 ' + it.name, 'gold'); sohranit(); render(); }
-function admVydatVseTovary() { for (var i = 0; i < tovari.length; i++) inv.push({ uid: Date.now() + Math.random() + i, itemId: tovari[i].id, kupCena: 0, ap: 0 }); toast('🎁 Все товары', 'gold'); sohranit(); render(); }
-function admOchistitSumku() { inv = []; toast('🗑️ Сумка очищена', 'ok'); sohranit(); render(); }
-function admSetDom() { var id = document.getElementById('admDom').value; moeDom = id; domUp = 0; toast('🏠 ' + naytiDom(id).name, 'gold'); sohranit(); render(); }
-function admVseDoma() { moeDom = 'mansion'; domUp = 0; toast('🏘️ Особняк', 'gold'); sohranit(); render(); }
-function admVtoroyDom() { vtoroyDom = 'mesto'; toast('🏗️ Место под 2-й дом', 'gold'); sohranit(); render(); }
-function admVseDostizheniya() { for (var i = 0; i < dostizheniya.length; i++) { if (!dostizheniya[i].done) { dostizheniya[i].done = true; dengi += dostizheniya[i].reward; } } toast('🏅 Все достижения', 'gold'); sohranit(); render(); }
-function admVseSkiny() { activeSkin = '🐲'; skinKingKupil = true; skinDragonKupil = true; toast('💼 Скин Дракон', 'gold'); sohranit(); render(); }
-function admProdatVseLoty() { if (loty.length === 0) return toast('Нет лотов', 'err'); var summa = 0; for (var i = 0; i < loty.length; i++) summa += loty[i].moyaCena; dengi += summa; loty = []; toast('💰 +' + formatChislo(summa) + '₽', 'gold'); sohranit(); render(); }
-function admOchistitLoty() { if (loty.length === 0) return toast('Нет лотов', 'err'); for (var i = 0; i < loty.length; i++) inv.push({ uid: Date.now() + Math.random() + i, itemId: loty[i].itemId, kupCena: loty[i].kupCena, ap: loty[i].ap }); loty = []; toast('🗑️ Лоты в сумку', 'ok'); sohranit(); render(); }
-function admObolg() { dolg = 0; platilDolg = true; toast('✅ Долг обнулён', 'gold'); sohranit(); render(); }
-function admBystroBogat() { dengi += 10000000; lvl = 50; maxEnerg = 20 + lvl * 2; opyt = trebOpyt(lvl); energ = maxEnerg; moeDom = 'mansion'; domUp = 3; for (var i = 0; i < dostizheniya.length; i++) dostizheniya[i].done = true; activeSkin = '🐲'; skinKingKupil = true; skinDragonKupil = true; toast('💎 +10 млн, Ур.50, особняк', 'gold'); sohranit(); render(); }
-function admBystroStart() { dengi = 1000; lvl = 1; opyt = 0; maxEnerg = 22; energ = 22; inv = []; loty = []; dolg = 0; moeDom = 'street'; domUp = 0; vtoroyDom = null; vtoroyDomId = null; vtoroyDomUp = 0; activeSkin = '👤'; apnutoDo5 = 0; vystavlenoLotov = 0; sEdeno = 0; sEdenoRestoran = 0; pospalRaz = 0; skinKingKupil = false; skinDragonKupil = false; bralKredit = false; platilDolg = false; toast('🔄 Откат', 'ok'); sohranit(); render(); }
+function admAddOpyt() { var v = parseInt(document.getElementById('admLvl').value); if (isNaN(v) || v <= 0) return toast('❌ Введи число', 'err'); dobavitOpyt(v); toast('📈 +'
