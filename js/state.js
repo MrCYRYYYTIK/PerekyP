@@ -34,7 +34,7 @@ var poslEnergMin = -9999;
 var pokazyvatModalki = true;
 
 var posledVidenVersiya = '';
-var TEKUSHCHAYA_VERSIYA = '1.1';
+var TEKUSHCHAYA_VERSIYA = '1.2';
 
 var kupilVsego = 0;
 var prodalVsego = 0;
@@ -104,12 +104,16 @@ function sobratSaveObekt() {
 function sohranit() {
   if (sohranenieVProtsesse) return;
   sohranenieVProtsesse = true;
+
   igrovoySdvig = tekuscheeIgrovoeMs();
   vremyaZahoda = Date.now();
   posledneeSohr = Date.now();
+
   var data = sobratSaveObekt();
   var json = JSON.stringify(data);
+
   try { localStorage.setItem(SAVE_KEY_LOCAL, json); } catch(e) {}
+
   if (typeof vkBridge !== 'undefined' && vkBridge && vkBridge.send) {
     try {
       vkBridge.send('VKWebAppStorageSet', { key: SAVE_KEY_VK, value: json }).catch(function() {});
@@ -120,6 +124,7 @@ function sohranit() {
 
 function primenitSave(d) {
   if (!d || typeof d !== 'object') return;
+
   if (typeof d.dengi === 'number' && d.dengi >= 0 && isFinite(d.dengi)) dengi = d.dengi;
   if (typeof d.lvl === 'number' && d.lvl >= 1 && d.lvl <= 1000) lvl = d.lvl;
   if (typeof d.opyt === 'number' && d.opyt >= 0) opyt = d.opyt;
@@ -172,6 +177,7 @@ function primenitSave(d) {
   if (typeof d.skinDragonKupil === 'boolean') skinDragonKupil = d.skinDragonKupil;
   if (typeof d.bralKredit === 'boolean') bralKredit = d.bralKredit;
   if (typeof d.platilDolg === 'boolean') platilDolg = d.platilDolg;
+
   var oldSdvig = (typeof d.igrovoySdvig === 'number') ? d.igrovoySdvig : 0;
   var oldSohr = (typeof d.posledneeSohr === 'number') ? d.posledneeSohr : Date.now();
   var proshloOffline = Date.now() - oldSohr;
@@ -294,7 +300,7 @@ function proveritDostizheniya() {
     if (d.id == 'skin_dragon' && skinDragonKupil) vypolnil = true;
     if (d.id == 'bank_first' && bralKredit) vypolnil = true;
     if (d.id == 'bank_clean' && platilDolg) vypolnil = true;
-    if (d.id == 'roulette_win' && jackpotVyl) vypolnil = true;
+
     if (vypolnil) {
       d.done = true;
       dengi += d.reward;
@@ -341,4 +347,4 @@ function dohodDomaSUp(dom, up) {
 
 function sonDomaSUp(dom, up) {
   return Math.floor(dom.son * (1 + up * 0.5));
-      }
+}
