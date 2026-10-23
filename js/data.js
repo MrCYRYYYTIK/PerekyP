@@ -117,7 +117,7 @@ var tovari = [
   { id: 'car_sport', name: '🏎️ Спорткар', cena: 12000000, lvl: 15, ap: 3000000, category: 'auto' },
   { id: 'penthouse', name: '🏘️ Пентхаус', cena: 25000000, lvl: 18, ap: 6000000, category: 'realty' },
   { id: 'island', name: '🏝️ Остров', cena: 50000000, lvl: 21, ap: 12000000, category: 'realty' },
-  { id: 'car_super', name: '⚡ СУПЕР-КАР', cena: 100000000, lvl: 25, ap: 25000000, category: 'auto' },
+  { id: 'car_super', name: '⚡ Tesla Roadster', cena: 100000000, lvl: 25, ap: 25000000, category: 'auto' },
   { id: 'watch', name: '⌚ Умные часы', cena: 5000, lvl: 2, ap: 1200, category: 'tech' },
   { id: 'jacket', name: '🧥 Куртка', cena: 4000, lvl: 1, ap: 1000, category: 'clothes' },
   { id: 'glasses', name: '🕶️ Очки', cena: 15000, lvl: 2, ap: 4000, category: 'clothes' },
@@ -127,7 +127,20 @@ var tovari = [
   { id: 'drone', name: '🚁 Дрон', cena: 250000, lvl: 8, ap: 60000, category: 'tech' },
   { id: 'rolex', name: '⌚ Ролекс', cena: 800000, lvl: 10, ap: 200000, category: 'clothes' },
   { id: 'boat', name: '🛥️ Катер', cena: 15000000, lvl: 16, ap: 3500000, category: 'auto' },
-  { id: 'yacht', name: '⛵ Яхта', cena: 60000000, lvl: 22, ap: 15000000, category: 'auto' }
+  { id: 'yacht', name: '⛵ Яхта', cena: 60000000, lvl: 22, ap: 15000000, category: 'auto' },
+  { id: 'drums', name: '🥁 Барабаны', cena: 30000, lvl: 3, ap: 8000, category: 'music' },
+  { id: 'action_cam', name: '📹 Экшн-камера', cena: 45000, lvl: 4, ap: 11000, category: 'tech' },
+  { id: 'sony', name: '🎧 Наушники Sony', cena: 80000, lvl: 5, ap: 20000, category: 'tech' },
+  { id: '3dprint', name: '🖨️ 3D-принтер', cena: 300000, lvl: 9, ap: 75000, category: 'tech' },
+  { id: 'robot', name: '🤖 Робот-пылесос', cena: 50000, lvl: 4, ap: 12000, category: 'tech' },
+  { id: 'cap', name: '🧢 Кепка Supreme', cena: 25000, lvl: 3, ap: 6000, category: 'clothes' },
+  { id: 'suit', name: '👔 Костюм', cena: 150000, lvl: 8, ap: 35000, category: 'clothes' },
+  { id: 'louis', name: '👜 Сумка Louis Vuitton', cena: 300000, lvl: 10, ap: 75000, category: 'clothes' },
+  { id: 'scooter', name: '🛴 Электросамокат', cena: 50000, lvl: 6, ap: 12000, category: 'auto' },
+  { id: 'tractor', name: '🚜 Трактор', cena: 3000000, lvl: 14, ap: 750000, category: 'auto' },
+  { id: 'camper', name: '🚐 Кемпер', cena: 8000000, lvl: 16, ap: 2000000, category: 'auto' },
+  { id: 'stroyka', name: '🏗️ Стройка', cena: 100000, lvl: 7, ap: 25000, category: 'realty' },
+  { id: 'shop', name: '🏬 Магазин', cena: 3000000, lvl: 14, ap: 750000, category: 'realty' }
 ];
 
 var keysy = [
@@ -172,7 +185,7 @@ var keysy = [
       { type: 'item', itemId: 'car_sport', weight: 18, name: 'Спорткар', icon: '🏎️' },
       { type: 'item', itemId: 'penthouse', weight: 9, name: 'Пентхаус', icon: '🏘️' },
       { type: 'item', itemId: 'island', weight: 2, name: 'Остров 🔥', icon: '🏝️' },
-      { type: 'item', itemId: 'car_super', weight: 1, name: 'СУПЕР-КАР 💎', icon: '⚡' }
+      { type: 'item', itemId: 'car_super', weight: 1, name: 'Tesla Roadster 💎', icon: '⚡' }
     ]
   }
 ];
