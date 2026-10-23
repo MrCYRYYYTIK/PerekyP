@@ -1,4 +1,4 @@
-var SAVE_VERSION = 4;
+var SAVE_VERSION = 8;
 var SAVE_KEY_LOCAL = 'perekup';
 var SAVE_KEY_VK = 'perekup_save_v2';
 
@@ -19,6 +19,7 @@ var dolg = 0;
 var activeSkin = '👤';
 var tab = 'market';
 var tema = 'dark';
+var cvet = 'blue';
 var moeDom = 'street';
 var vtoroyDom = null;
 var domUp = 0;
@@ -34,11 +35,10 @@ var poslEnergMin = -9999;
 var pokazyvatModalki = true;
 
 var posledVidenVersiya = '';
-var TEKUSHCHAYA_VERSIYA = '1.2';
+var TEKUSHCHAYA_VERSIYA = '1.2.1';
 
 var kupilVsego = 0;
 var prodalVsego = 0;
-var jackpotVyl = false;
 var apnutoDo5 = 0;
 var vystavlenoLotov = 0;
 var sEdeno = 0;
@@ -50,6 +50,20 @@ var bralKredit = false;
 var platilDolg = false;
 
 var rynokCateg = 'all';
+var casinoTab = 'keysy';
+var rulPoslRezultat = '';
+var upgradeVybranUid = null;
+var upgradeResult = '';
+
+var CVET_MAP = {
+  blue: { accent: '#66ccff', text: '#000' },
+  green: { accent: '#66ff66', text: '#000' },
+  purple: { accent: '#c966ff', text: '#fff' },
+  red: { accent: '#ff6666', text: '#fff' },
+  orange: { accent: '#ff9933', text: '#000' },
+  yellow: { accent: '#ffdd33', text: '#000' },
+  pink: { accent: '#ff66aa', text: '#fff' }
+};
 
 function tekuscheeIgrovoeMs() {
   var vIgre = (Date.now() - vremyaZahoda) * MNOZHITEL_V_IGRE;
@@ -74,6 +88,31 @@ function formatTime(chas, min) {
 function primenitTemu() {
   if (tema == 'light') document.body.classList.add('light');
   else document.body.classList.remove('light');
+  
+  var cv = CVET_MAP[cvet] || CVET_MAP.blue;
+  document.documentElement.style.setProperty('--accent', cv.accent);
+  document.documentElement.style.setProperty('--accent-text', cv.text);
+  
+  setTimeout(function() {
+    var accentEls = document.querySelectorAll('.clock, .stat b, .tab.active, .cat.active, .admin-title, .modal h2');
+    for (var i = 0; i < accentEls.length; i++) accentEls[i].style.color = cv.accent;
+    
+    var tabActive = document.querySelectorAll('.tab.active');
+    for (var j = 0; j < tabActive.length; j++) {
+      tabActive[j].style.background = cv.accent;
+      tabActive[j].style.color = cv.text;
+    }
+    var catActive = document.querySelectorAll('.cat.active');
+    for (var k = 0; k < catActive.length; k++) {
+      catActive[k].style.background = cv.accent;
+      catActive[k].style.color = cv.text;
+    }
+    var btns = document.querySelectorAll('.btn:not(.green):not(.red):not(.gold):not(.purple)');
+    for (var b = 0; b < btns.length; b++) {
+      btns[b].style.background = cv.accent;
+      btns[b].style.color = cv.text;
+    }
+  }, 50);
 }
 
 function sobratSaveObekt() {
@@ -86,7 +125,7 @@ function sobratSaveObekt() {
     poslSonDen: poslSonDen, poslEdaMin: poslEdaMin, poslEnergMin: poslEnergMin,
     activeSkin: activeSkin, dostizheniya: dostizheniya,
     kupilVsego: kupilVsego, prodalVsego: prodalVsego,
-    jackpotVyl: jackpotVyl, tema: tema, moeDom: moeDom,
+    tema: tema, cvet: cvet, moeDom: moeDom,
     vtoroyDom: vtoroyDom, pokazyvatModalki: pokazyvatModalki,
     domUp: domUp, vtoroyDomId: vtoroyDomId, vtoroyDomUp: vtoroyDomUp,
     poslDohodDen: poslDohodDen,
@@ -104,27 +143,20 @@ function sobratSaveObekt() {
 function sohranit() {
   if (sohranenieVProtsesse) return;
   sohranenieVProtsesse = true;
-
   igrovoySdvig = tekuscheeIgrovoeMs();
   vremyaZahoda = Date.now();
   posledneeSohr = Date.now();
-
   var data = sobratSaveObekt();
   var json = JSON.stringify(data);
-
   try { localStorage.setItem(SAVE_KEY_LOCAL, json); } catch(e) {}
-
   if (typeof vkBridge !== 'undefined' && vkBridge && vkBridge.send) {
-    try {
-      vkBridge.send('VKWebAppStorageSet', { key: SAVE_KEY_VK, value: json }).catch(function() {});
-    } catch(e) {}
+    try { vkBridge.send('VKWebAppStorageSet', { key: SAVE_KEY_VK, value: json }).catch(function() {}); } catch(e) {}
   }
   sohranenieVProtsesse = false;
 }
 
 function primenitSave(d) {
   if (!d || typeof d !== 'object') return;
-
   if (typeof d.dengi === 'number' && d.dengi >= 0 && isFinite(d.dengi)) dengi = d.dengi;
   if (typeof d.lvl === 'number' && d.lvl >= 1 && d.lvl <= 1000) lvl = d.lvl;
   if (typeof d.opyt === 'number' && d.opyt >= 0) opyt = d.opyt;
@@ -158,8 +190,8 @@ function primenitSave(d) {
   }
   if (typeof d.kupilVsego === 'number' && d.kupilVsego >= 0) kupilVsego = d.kupilVsego;
   if (typeof d.prodalVsego === 'number' && d.prodalVsego >= 0) prodalVsego = d.prodalVsego;
-  if (typeof d.jackpotVyl === 'boolean') jackpotVyl = d.jackpotVyl;
   if (d.tema === 'dark' || d.tema === 'light') tema = d.tema;
+  if (typeof d.cvet === 'string' && CVET_MAP[d.cvet]) cvet = d.cvet;
   if (typeof d.moeDom === 'string' && naytiDom(d.moeDom)) moeDom = d.moeDom;
   if (d.vtoroyDom === 'mesto' || d.vtoroyDom === null) vtoroyDom = d.vtoroyDom;
   if (typeof d.pokazyvatModalki === 'boolean') pokazyvatModalki = d.pokazyvatModalki;
@@ -177,7 +209,6 @@ function primenitSave(d) {
   if (typeof d.skinDragonKupil === 'boolean') skinDragonKupil = d.skinDragonKupil;
   if (typeof d.bralKredit === 'boolean') bralKredit = d.bralKredit;
   if (typeof d.platilDolg === 'boolean') platilDolg = d.platilDolg;
-
   var oldSdvig = (typeof d.igrovoySdvig === 'number') ? d.igrovoySdvig : 0;
   var oldSohr = (typeof d.posledneeSohr === 'number') ? d.posledneeSohr : Date.now();
   var proshloOffline = Date.now() - oldSohr;
@@ -226,7 +257,7 @@ function sbrosProgressa() {
   poslBonus = 0; seriyaDney = 0;
   poslSonDen = 0; poslEdaMin = -9999; poslEnergMin = -9999;
   kupilVsego = 0; prodalVsego = 0;
-  jackpotVyl = false; apnutoDo5 = 0; vystavlenoLotov = 0;
+  apnutoDo5 = 0; vystavlenoLotov = 0;
   sEdeno = 0; sEdenoRestoran = 0; pospalRaz = 0;
   skinKingKupil = false; skinDragonKupil = false;
   bralKredit = false; platilDolg = false;
@@ -300,7 +331,6 @@ function proveritDostizheniya() {
     if (d.id == 'skin_dragon' && skinDragonKupil) vypolnil = true;
     if (d.id == 'bank_first' && bralKredit) vypolnil = true;
     if (d.id == 'bank_clean' && platilDolg) vypolnil = true;
-
     if (vypolnil) {
       d.done = true;
       dengi += d.reward;
@@ -347,4 +377,4 @@ function dohodDomaSUp(dom, up) {
 
 function sonDomaSUp(dom, up) {
   return Math.floor(dom.son * (1 + up * 0.5));
-}
+      }
